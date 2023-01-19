@@ -16,7 +16,7 @@ export const bearerAuthMiddleware = async (req:Request, res:Response, next: Next
         return res.status(401).send("no token provided")
     }
     const token = req.headers.authorization.split(' ')[1]
-    const userId = await jwtService.getUserIdByToken(token)
+    const userId = await jwtService.getUserIdByAccessToken(token)
     if (userId) {
         req.user = await authService.findUserById(userId)
         next ()

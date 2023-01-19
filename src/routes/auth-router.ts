@@ -16,6 +16,9 @@ import {
 import {jwtService} from "../application/jwt-service";
 import {bearerAuthMiddleware} from "../middlewares/auth-middlewares";
 import {authService} from "../domain/auth-service";
+import jwt from "jsonwebtoken";
+import {jwtRepository} from "../repositories/jwt-repository";
+import {usersRepository} from "../repositories/users/users-repository-db";
 
 
 
@@ -79,11 +82,39 @@ authRouter.post('/login',
             res.send(401)
             return
         }
-        const token = await jwtService.createJWT(user)
-        res.send({"accessToken": token})
-        return
+        const accessToken = await jwtService.createJWTAccessToken(user)
+        const refreshToken = await jwtService.createJWTRefreshToken(user)
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: false
+        })
+        res.json({'accessToken': accessToken})
 
 })
+
+authRouter.post('/refresh-token',
+    async(req: Request, res: Response) => {
+    const refreshToken = req.cookies.refreshToken
+    const userId = await jwtService.getUserIdByRefreshToken(refreshToken)
+    const isTokenActive = await jwtRepository.findToken(refreshToken)
+    if (!userId) {
+        res.send(401)
+        return
+    }
+    if (!isTokenActive) {
+        res.send(401)
+        return
+    }
+    const user = await usersRepository.findUserById(userId)
+    const newAccessToken = await jwtService.createJWTAccessToken(user)
+    const newRefreshToken = await jwtService.createNewJWTRefreshToken(user)
+    res.cookie('refreshToken', newRefreshToken, {
+        httpOnly: true,
+        secure: false
+    })
+    res.json({'accessToken': newAccessToken})
+
+    })
 
 authRouter.get('/me',
     bearerAuthMiddleware,

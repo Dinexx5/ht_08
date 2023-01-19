@@ -1,12 +1,12 @@
 import {userAccountsCollection} from "../db";
-import {userAccountDbType, userViewModel} from "../../models/models";
+import {userAccountDbModel, userViewModel} from "../../models/models";
 import {ObjectId} from "mongodb";
 
 
 export const usersRepository = {
     //for superAdmin:
 
-    async createUserByAdmin(newDbUser: userAccountDbType): Promise<userViewModel> {
+    async createUserByAdmin(newDbUser: userAccountDbModel): Promise<userViewModel> {
         await userAccountsCollection.insertOne(newDbUser)
         return {
             id: newDbUser._id.toString(),
@@ -26,26 +26,26 @@ export const usersRepository = {
 
     // req.user in bearerAuthMiddleware
 
-    async findUserById(userId: Object): Promise<userAccountDbType> {
+    async findUserById(userId: Object): Promise<userAccountDbModel> {
         let user = await userAccountsCollection.findOne({_id: userId})
         return user!
     },
 
     // for regular creation of user
 
-    async createUser(newDbUser: userAccountDbType): Promise<userAccountDbType> {
+    async createUser(newDbUser: userAccountDbModel): Promise<userAccountDbModel> {
         await userAccountsCollection.insertOne(newDbUser)
         return newDbUser
 
     },
 
-    async findByLoginOrEmail(loginOrEmail: string): Promise<userAccountDbType | null> {
+    async findByLoginOrEmail(loginOrEmail: string): Promise<userAccountDbModel | null> {
         return await userAccountsCollection.findOne( {$or: [{'accountData.email': loginOrEmail}, {'accountData.login': loginOrEmail}] } )
     },
 
     //email resending
 
-    async findUserByConfirmationCode(code: string): Promise<userAccountDbType | null> {
+    async findUserByConfirmationCode(code: string): Promise<userAccountDbModel | null> {
         return await userAccountsCollection.findOne({'emailConfirmation.confirmationCode': code})
 
     },

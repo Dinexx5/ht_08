@@ -1,16 +1,16 @@
 import {commentsCollection} from "../db";
 import {
-    commentDbType,
-    commentViewModel, userAccountDbType,
+    commentDbModel,
+    commentViewModel, userAccountDbModel,
 } from "../../models/models";
 import {ObjectId} from "mongodb";
 
 
 export const commentsRepository = {
 
-    async createComment (content: string, user: userAccountDbType, postId: string): Promise<commentViewModel> {
+    async createComment (content: string, user: userAccountDbModel, postId: string): Promise<commentViewModel> {
 
-        const commentDb: commentDbType = {
+        const commentDb: commentDbModel = {
             _id: new ObjectId(),
             content: content,
             createdAt: new Date().toISOString(),

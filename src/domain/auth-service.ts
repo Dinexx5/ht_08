@@ -1,5 +1,5 @@
 import {usersRepository} from "../repositories/users/users-repository-db";
-import {authInputModel, createUserInputModel, userAccountDbType} from "../models/models";
+import {authInputModel, createUserInputModel, userAccountDbModel} from "../models/models";
 import bcrypt from 'bcrypt'
 import {ObjectId} from "mongodb";
 import {v4 as uuidv4} from 'uuid'
@@ -10,11 +10,11 @@ export const authService = {
 
     //registration
 
-    async createUser(body: createUserInputModel): Promise<userAccountDbType | null> {
+    async createUser(body: createUserInputModel): Promise<userAccountDbModel | null> {
         const {login , email, password} = body
         const passwordSalt = await bcrypt.genSalt(10)
         const passwordHash = await bcrypt.hash(password, passwordSalt)
-        const newDbAccount: userAccountDbType = {
+        const newDbAccount: userAccountDbModel = {
             _id: new ObjectId(),
             accountData: {
                 login: login,
@@ -44,13 +44,13 @@ export const authService = {
 
     // req.user in bearerAuthMiddleware
 
-    async findUserById(userId: Object): Promise<userAccountDbType> {
+    async findUserById(userId: Object): Promise<userAccountDbModel> {
         return await usersRepository.findUserById(userId)
 
     },
 
     async resendEmail(email:string): Promise<boolean> {
-        const user: userAccountDbType | null = await usersRepository.findByLoginOrEmail(email)
+        const user: userAccountDbModel | null = await usersRepository.findByLoginOrEmail(email)
         const confirmationCode = uuidv4()
         await usersRepository.updateCode(user!._id, confirmationCode)
         try {
@@ -71,7 +71,7 @@ export const authService = {
 
     //login
 
-    async checkCredentials (body: authInputModel): Promise<userAccountDbType | null> {
+    async checkCredentials (body: authInputModel): Promise<userAccountDbModel | null> {
         const {loginOrEmail, password} = body
         const user = await usersRepository.findByLoginOrEmail(loginOrEmail)
         if (!user) {

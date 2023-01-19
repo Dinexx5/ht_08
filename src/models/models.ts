@@ -89,7 +89,7 @@ export type userViewModel = {
     createdAt: string
 }
 
-export type userAccountDbType = {
+export type userAccountDbModel = {
     _id: Object
     accountData: accountData
     emailConfirmation: emailConfirmation
@@ -130,7 +130,7 @@ export type commentViewModel = {
     userLogin: string
     createdAt: string
 }
-export type commentDbType = {
+export type commentDbModel = {
     _id: Object
     content: string
     createdAt: string
@@ -147,4 +147,8 @@ export type paginationQuerys = {
     searchNameTerm?: string
     searchLoginTerm?: string
     searchEmailTerm?: string
+}
+export type refreshTokenModel = {
+    token: string,
+    userId: Object
 }

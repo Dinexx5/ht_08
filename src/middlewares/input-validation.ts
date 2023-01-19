@@ -1,7 +1,7 @@
 import {NextFunction, Request, Response} from "express";
 import {body, validationResult} from "express-validator";
 import {blogsQueryRepository} from "../repositories/blogs/blogs-query-repository";
-import {blogViewModel, userAccountDbType} from "../models/models";
+import {blogViewModel, userAccountDbModel} from "../models/models";
 import {ObjectId} from "mongodb";
 import {usersRepository} from "../repositories/users/users-repository-db";
 import {usersService} from "../domain/users-service";
@@ -61,7 +61,7 @@ export const commentContentValidation = body('content').trim().isLength({min: 20
 //registration validation
 export const loginValidation = body('login').trim().isLength({min: 3, max: 10}).withMessage('Incorrect length').matches(/^[a-zA-Z0-9_-]*$/).withMessage('Incorrect login pattern')
     .custom(async (login) => {
-        const isUser: userAccountDbType | null = await usersRepository.findByLoginOrEmail(login)
+        const isUser: userAccountDbModel | null = await usersRepository.findByLoginOrEmail(login)
         if (isUser) {
             throw new Error('user with provided login already exists');
         }
@@ -72,7 +72,7 @@ export const passwordValidation = body('password').trim().isLength({min: 6, max:
 
 export const emailValidation = body('email').trim().isEmail().withMessage('Not an email')
     .custom(async (email) => {
-        const isUser: userAccountDbType | null = await usersRepository.findByLoginOrEmail(email)
+        const isUser: userAccountDbModel | null = await usersRepository.findByLoginOrEmail(email)
         if (isUser) {
             throw new Error('user with provided email already exists');
         }
@@ -82,7 +82,7 @@ export const emailValidation = body('email').trim().isEmail().withMessage('Not a
 //resending email
 export const emailValidationForResending = body('email').trim().isEmail().withMessage('Not an email')
     .custom(async (email) => {
-        const isUser: userAccountDbType | null = await usersRepository.findByLoginOrEmail(email)
+        const isUser: userAccountDbModel | null = await usersRepository.findByLoginOrEmail(email)
         if (!isUser) {
             throw new Error('user with provided email does not exist');
         }

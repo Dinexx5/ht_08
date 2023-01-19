@@ -1,11 +1,11 @@
 import {
-    commentDbType, commentViewModel,
+    commentDbModel, commentViewModel,
     paginationQuerys, paginatedViewModel
 } from "../../models/models";
 import {commentsCollection} from "../db";
 import {ObjectId} from "mongodb";
 
-function mapCommentToCommentViewModel (comment: commentDbType): commentViewModel {
+function mapCommentToCommentViewModel (comment: commentDbModel): commentViewModel {
     return  {
         id: comment._id.toString(),
         content: comment.content,
@@ -46,7 +46,7 @@ export const commentsQueryRepository = {
     async findCommentById(commentId: string): Promise<commentViewModel | null> {
 
         let _id = new ObjectId(commentId)
-        let foundComment: commentDbType | null = await commentsCollection.findOne({_id: _id})
+        let foundComment: commentDbModel | null = await commentsCollection.findOne({_id: _id})
         if (!foundComment) {
             return null
         }

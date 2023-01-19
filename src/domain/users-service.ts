@@ -1,5 +1,5 @@
 import {usersRepository} from "../repositories/users/users-repository-db";
-import {createUserInputModel, userAccountDbType, userViewModel} from "../models/models";
+import {createUserInputModel, userAccountDbModel, userViewModel} from "../models/models";
 import bcrypt from 'bcrypt'
 import {ObjectId} from "mongodb";
 import {v4 as uuidv4} from "uuid";
@@ -11,7 +11,7 @@ export const usersService = {
         const {login , email, password} = body
         const passwordSalt = await bcrypt.genSalt(10)
         const passwordHash = await bcrypt.hash(password, passwordSalt)
-        const newDbAccount: userAccountDbType = {
+        const newDbAccount: userAccountDbModel = {
             _id: new ObjectId(),
             accountData: {
                 login: login,

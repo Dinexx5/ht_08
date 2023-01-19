@@ -2,10 +2,10 @@ import {userAccountsCollection} from "../db";
 import {
     userViewModel,
     paginationQuerys,
-    paginatedViewModel, userAccountDbType
+    paginatedViewModel, userAccountDbModel
 } from "../../models/models";
 
-function mapDbUserToUserViewModel (user: userAccountDbType): userViewModel {
+function mapDbUserToUserViewModel (user: userAccountDbModel): userViewModel {
     return  {
         login: user.accountData.login,
         email: user.accountData.email,
@@ -26,7 +26,7 @@ export const usersQueryRepository = {
 
         if (searchLoginTerm && !searchEmailTerm){
             const countAllWithSearchLoginTerm = await userAccountsCollection.countDocuments({'accountData.login': {$regex: searchLoginTerm, $options: 'i' } })
-            const usersDb: userAccountDbType[] = await userAccountsCollection
+            const usersDb: userAccountDbModel[] = await userAccountsCollection
                 .find( {'accountData.login': {$regex: searchLoginTerm, $options: 'i' } }  )
                 .sort( {[sortBy]: sortDirectionInt} )
                 .skip(skippedUsersCount)
@@ -46,7 +46,7 @@ export const usersQueryRepository = {
 
         if (searchEmailTerm && !searchLoginTerm){
             const countAllWithSearchEmailTerm = await userAccountsCollection.countDocuments({'accountData.email': {$regex: searchEmailTerm, $options: 'i' } })
-            const usersDb: userAccountDbType[] = await userAccountsCollection
+            const usersDb: userAccountDbModel[] = await userAccountsCollection
                 .find( {'accountData.email': {$regex: searchEmailTerm, $options: 'i' } }  )
                 .sort( {[sortBy]: sortDirectionInt} )
                 .skip(skippedUsersCount)
@@ -66,7 +66,7 @@ export const usersQueryRepository = {
 
         if (searchLoginTerm && searchEmailTerm){
             const countAllWithBothTerms = await userAccountsCollection.countDocuments( {$or: [{'accountData.email': {$regex: searchEmailTerm, $options: 'i' } }, {'accountData.login': {$regex: searchLoginTerm, $options: 'i' }} ] })
-            const usersDb: userAccountDbType[] = await userAccountsCollection
+            const usersDb: userAccountDbModel[] = await userAccountsCollection
                 .find(  {$or: [{'accountData.email': {$regex: searchEmailTerm, $options: 'i' } }, {'accountData.login': {$regex: searchLoginTerm, $options: 'i' }} ] } )
                 .sort( {[sortBy]: sortDirectionInt} )
                 .skip(skippedUsersCount)
