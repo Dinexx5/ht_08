@@ -20,12 +20,12 @@ const jwt_repository_1 = require("../repositories/jwt-repository");
 exports.jwtService = {
     createJWTAccessToken(user) {
         return __awaiter(this, void 0, void 0, function* () {
-            return jsonwebtoken_1.default.sign({ userId: user._id }, settings_1.settings.JWT_ACCESS_SECRET, { expiresIn: "1000s" });
+            return jsonwebtoken_1.default.sign({ userId: user._id }, settings_1.settings.JWT_ACCESS_SECRET, { expiresIn: "10s" });
         });
     },
     createJWTRefreshToken(user) {
         return __awaiter(this, void 0, void 0, function* () {
-            const refreshToken = jsonwebtoken_1.default.sign({ userId: user._id }, settings_1.settings.JWT_REFRESH_SECRET, { expiresIn: "2000s" });
+            const refreshToken = jsonwebtoken_1.default.sign({ userId: user._id }, settings_1.settings.JWT_REFRESH_SECRET, { expiresIn: "20s" });
             const dbToken = {
                 userId: user._id,
                 token: refreshToken
@@ -35,7 +35,7 @@ exports.jwtService = {
     },
     createNewJWTRefreshToken(user) {
         return __awaiter(this, void 0, void 0, function* () {
-            const newRefreshToken = jsonwebtoken_1.default.sign({ userId: user._id }, settings_1.settings.JWT_REFRESH_SECRET, { expiresIn: "2000s" });
+            const newRefreshToken = jsonwebtoken_1.default.sign({ userId: user._id }, settings_1.settings.JWT_REFRESH_SECRET, { expiresIn: "20s" });
             const newDbToken = {
                 userId: user._id,
                 token: newRefreshToken

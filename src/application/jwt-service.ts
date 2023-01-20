@@ -9,12 +9,12 @@ import {jwtRepository} from "../repositories/jwt-repository";
 export const jwtService = {
 
     async createJWTAccessToken(user: userAccountDbModel): Promise<string> {
-        return jwt.sign({userId: user._id}, settings.JWT_ACCESS_SECRET, {expiresIn: "1000s"})
+        return jwt.sign({userId: user._id}, settings.JWT_ACCESS_SECRET, {expiresIn: "10s"})
 
     },
 
     async createJWTRefreshToken(user: userAccountDbModel): Promise<string> {
-        const refreshToken = jwt.sign({userId: user._id}, settings.JWT_REFRESH_SECRET, {expiresIn: "2000s"})
+        const refreshToken = jwt.sign({userId: user._id}, settings.JWT_REFRESH_SECRET, {expiresIn: "20s"})
         const dbToken: refreshTokenModel = {
             userId: user._id,
             token: refreshToken
@@ -23,7 +23,7 @@ export const jwtService = {
 
     },
     async createNewJWTRefreshToken(user: userAccountDbModel): Promise<string> {
-        const newRefreshToken = jwt.sign({userId: user._id}, settings.JWT_REFRESH_SECRET, {expiresIn: "2000s"})
+        const newRefreshToken = jwt.sign({userId: user._id}, settings.JWT_REFRESH_SECRET, {expiresIn: "20s"})
         const newDbToken: refreshTokenModel = {
             userId: user._id,
             token: newRefreshToken
