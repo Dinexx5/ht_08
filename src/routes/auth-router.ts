@@ -78,6 +78,7 @@ authRouter.post('/login',
     async(req: RequestWithBody<authInputModel>, res: Response) => {
         const user = await authService.checkCredentials(req.body)
         if (!user) {
+            res.clearCookie('refreshToken')
             res.send(401)
             return
         }
@@ -101,10 +102,12 @@ authRouter.post('/refresh-token',
     const userId = await jwtService.getUserIdByRefreshToken(refreshToken)
     const isTokenActive = await jwtRepository.findToken(refreshToken)
     if (!userId) {
+        res.clearCookie('refreshToken')
         res.send(401)
         return
     }
     if (!isTokenActive) {
+        res.clearCookie('refreshToken')
         res.send(401)
         return
     }
@@ -130,14 +133,17 @@ authRouter.post('/logout',
         const userId = await jwtService.getUserIdByRefreshToken(refreshToken)
         const isTokenActive = await jwtRepository.findToken(refreshToken)
         if (!userId) {
+            res.clearCookie('refreshToken')
             res.send(401)
             return
         }
         if (!isTokenActive) {
+            res.clearCookie('refreshToken')
             res.send(401)
             return
         }
         await jwtService.deletePreviousRefreshToken(refreshToken)
+        res.clearCookie('refreshToken')
         return res.send(204)
 
     })

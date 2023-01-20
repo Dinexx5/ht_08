@@ -45,6 +45,7 @@ exports.authRouter.post('/registration-confirmation', input_validation_1.confirm
 exports.authRouter.post('/login', input_validation_1.loginOrEmailValidation, input_validation_1.passwordAuthValidation, input_validation_1.inputValidationMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield auth_service_1.authService.checkCredentials(req.body);
     if (!user) {
+        res.clearCookie('refreshToken');
         res.send(401);
         return;
     }
@@ -65,10 +66,12 @@ exports.authRouter.post('/refresh-token', (req, res) => __awaiter(void 0, void 0
     const userId = yield jwt_service_1.jwtService.getUserIdByRefreshToken(refreshToken);
     const isTokenActive = yield jwt_repository_1.jwtRepository.findToken(refreshToken);
     if (!userId) {
+        res.clearCookie('refreshToken');
         res.send(401);
         return;
     }
     if (!isTokenActive) {
+        res.clearCookie('refreshToken');
         res.send(401);
         return;
     }
@@ -91,14 +94,17 @@ exports.authRouter.post('/logout', (req, res) => __awaiter(void 0, void 0, void 
     const userId = yield jwt_service_1.jwtService.getUserIdByRefreshToken(refreshToken);
     const isTokenActive = yield jwt_repository_1.jwtRepository.findToken(refreshToken);
     if (!userId) {
+        res.clearCookie('refreshToken');
         res.send(401);
         return;
     }
     if (!isTokenActive) {
+        res.clearCookie('refreshToken');
         res.send(401);
         return;
     }
     yield jwt_service_1.jwtService.deletePreviousRefreshToken(refreshToken);
+    res.clearCookie('refreshToken');
     return res.send(204);
 }));
 exports.authRouter.get('/me', auth_middlewares_1.bearerAuthMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
