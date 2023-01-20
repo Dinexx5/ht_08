@@ -53,13 +53,14 @@ exports.authRouter.post('/login', input_validation_1.loginOrEmailValidation, inp
     const refreshToken = yield jwt_service_1.jwtService.createJWTRefreshToken(user);
     res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
-        secure: true
+        secure: false
     });
     res.json({ 'accessToken': accessToken });
 }));
 exports.authRouter.post('/refresh-token', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const refreshToken = req.cookies.refreshToken;
     if (!req.cookies.refreshToken) {
+        console.log('!cookie');
         res.send(401);
         return;
     }
@@ -67,11 +68,13 @@ exports.authRouter.post('/refresh-token', (req, res) => __awaiter(void 0, void 0
     const isTokenActive = yield jwt_repository_1.jwtRepository.findToken(refreshToken);
     if (!userId) {
         res.clearCookie('refreshToken');
+        console.log('no user id');
         res.send(401);
         return;
     }
     if (!isTokenActive) {
         res.clearCookie('refreshToken');
+        console.log('not active token');
         res.send(401);
         return;
     }

@@ -86,7 +86,7 @@ authRouter.post('/login',
         const refreshToken = await jwtService.createJWTRefreshToken(user)
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
-            secure: true
+            secure: false
         })
         res.json({'accessToken': accessToken})
 
@@ -96,6 +96,7 @@ authRouter.post('/refresh-token',
     async(req: Request, res: Response) => {
     const refreshToken = req.cookies.refreshToken
     if (!req.cookies.refreshToken) {
+        console.log('!cookie')
         res.send(401)
         return
     }
@@ -103,11 +104,13 @@ authRouter.post('/refresh-token',
     const isTokenActive = await jwtRepository.findToken(refreshToken)
     if (!userId) {
         res.clearCookie('refreshToken')
+        console.log('no user id')
         res.send(401)
         return
     }
     if (!isTokenActive) {
         res.clearCookie('refreshToken')
+        console.log('not active token')
         res.send(401)
         return
     }

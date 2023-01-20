@@ -26,7 +26,7 @@ exports.jwtRepository = {
     },
     findToken(refreshToken) {
         return __awaiter(this, void 0, void 0, function* () {
-            const isFound = yield db_1.tokenCollection.findOne({ refreshToken: refreshToken });
+            const isFound = yield db_1.tokenCollection.findOne({ token: refreshToken });
             if (!isFound) {
                 return false;
             }
@@ -35,7 +35,7 @@ exports.jwtRepository = {
     },
     deleteToken(refreshToken) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield db_1.tokenCollection.deleteOne({ refreshToken: refreshToken });
+            const result = yield db_1.tokenCollection.deleteOne({ token: refreshToken });
             return result.deletedCount === 1;
         });
     }

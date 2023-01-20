@@ -15,7 +15,7 @@ export const jwtRepository = {
     },
 
     async findToken(refreshToken: string): Promise<boolean> {
-        const isFound = await tokenCollection.findOne({refreshToken: refreshToken})
+        const isFound = await tokenCollection.findOne({token: refreshToken})
         if (!isFound){
             return false
         }
@@ -23,7 +23,7 @@ export const jwtRepository = {
     },
 
     async deleteToken(refreshToken: string): Promise<boolean> {
-        const result = await tokenCollection.deleteOne({refreshToken: refreshToken})
+        const result = await tokenCollection.deleteOne({token: refreshToken})
         return result.deletedCount === 1
     }
 }
