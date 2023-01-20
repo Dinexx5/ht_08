@@ -6,6 +6,7 @@ import {testingRouter} from "./routes/testing-router";
 import {usersRouter} from "./routes/users-router";
 import {authRouter} from "./routes/auth-router";
 import {commentsRouter} from "./routes/comments-router";
+import cookieParser from 'cookie-parser';
 
 
 export const app = express()
@@ -13,6 +14,7 @@ export const port = 3001
 
 const parserMiddleware = bodyParser({})
 app.use(parserMiddleware)
+app.use(cookieParser())
 
 app.use('/auth', authRouter)
 app.use('/users', usersRouter)
