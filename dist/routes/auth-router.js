@@ -53,7 +53,7 @@ exports.authRouter.post('/login', input_validation_1.loginOrEmailValidation, inp
     const refreshToken = yield jwt_service_1.jwtService.createJWTRefreshToken(user);
     res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
-        secure: false
+        secure: true
     });
     res.json({ 'accessToken': accessToken });
 }));
