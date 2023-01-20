@@ -9,12 +9,12 @@ import {jwtRepository} from "../repositories/jwt-repository";
 export const jwtService = {
 
     async createJWTAccessToken(user: userAccountDbModel): Promise<string> {
-        return jwt.sign({userId: user._id}, settings.JWT_ACCESS_SECRET, {expiresIn: "10s"})
+        return jwt.sign({userId: user._id}, settings.JWT_ACCESS_SECRET, {expiresIn: "1000s"})
 
     },
 
     async createJWTRefreshToken(user: userAccountDbModel): Promise<string> {
-        const refreshToken = jwt.sign({userId: user._id}, settings.JWT_ACCESS_SECRET, {expiresIn: "20s"})
+        const refreshToken = jwt.sign({userId: user._id}, settings.JWT_ACCESS_SECRET, {expiresIn: "2000s"})
         const dbToken: refreshTokenModel = {
             userId: user._id,
             token: refreshToken
@@ -23,12 +23,17 @@ export const jwtService = {
 
     },
     async createNewJWTRefreshToken(user: userAccountDbModel): Promise<string> {
-        const newRefreshToken = jwt.sign({userId: user._id}, settings.JWT_ACCESS_SECRET, {expiresIn: "20s"})
+        const newRefreshToken = jwt.sign({userId: user._id}, settings.JWT_ACCESS_SECRET, {expiresIn: "2000s"})
         const newDbToken: refreshTokenModel = {
             userId: user._id,
             token: newRefreshToken
         }
         return await jwtRepository.updateRefreshTokenForUser(newDbToken)
+
+    },
+
+    async deletePreviousRefreshToken(token: string): Promise<boolean> {
+        return jwtRepository.deleteToken(token)
 
     },
 

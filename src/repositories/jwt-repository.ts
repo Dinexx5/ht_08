@@ -20,5 +20,10 @@ export const jwtRepository = {
             return false
         }
         return true
+    },
+
+    async deleteToken(refreshToken: string): Promise<boolean> {
+        const result = await tokenCollection.deleteOne({refreshToken: refreshToken})
+        return result.deletedCount === 1
     }
 }

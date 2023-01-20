@@ -16,16 +16,53 @@ exports.jwtService = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const mongodb_1 = require("mongodb");
 const settings_1 = require("../settings");
+const jwt_repository_1 = require("../repositories/jwt-repository");
 exports.jwtService = {
-    createJWT(user) {
+    createJWTAccessToken(user) {
         return __awaiter(this, void 0, void 0, function* () {
-            return jsonwebtoken_1.default.sign({ userId: user._id }, settings_1.settings.JWT_SECRET, { expiresIn: "1h" });
+            return jsonwebtoken_1.default.sign({ userId: user._id }, settings_1.settings.JWT_ACCESS_SECRET, { expiresIn: "1000s" });
         });
     },
-    getUserIdByToken(token) {
+    createJWTRefreshToken(user) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const refreshToken = jsonwebtoken_1.default.sign({ userId: user._id }, settings_1.settings.JWT_ACCESS_SECRET, { expiresIn: "2000s" });
+            const dbToken = {
+                userId: user._id,
+                token: refreshToken
+            };
+            return yield jwt_repository_1.jwtRepository.saveRefreshTokenForUser(dbToken);
+        });
+    },
+    createNewJWTRefreshToken(user) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const newRefreshToken = jsonwebtoken_1.default.sign({ userId: user._id }, settings_1.settings.JWT_ACCESS_SECRET, { expiresIn: "2000s" });
+            const newDbToken = {
+                userId: user._id,
+                token: newRefreshToken
+            };
+            return yield jwt_repository_1.jwtRepository.updateRefreshTokenForUser(newDbToken);
+        });
+    },
+    deletePreviousRefreshToken(token) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return jwt_repository_1.jwtRepository.deleteToken(token);
+        });
+    },
+    getUserIdByAccessToken(token) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const result = jsonwebtoken_1.default.verify(token, settings_1.settings.JWT_SECRET);
+                const result = jsonwebtoken_1.default.verify(token, settings_1.settings.JWT_ACCESS_SECRET);
+                return new mongodb_1.ObjectId(result.userId);
+            }
+            catch (error) {
+                return null;
+            }
+        });
+    },
+    getUserIdByRefreshToken(token) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const result = jsonwebtoken_1.default.verify(token, settings_1.settings.JWT_REFRESH_SECRET);
                 return new mongodb_1.ObjectId(result.userId);
             }
             catch (error) {

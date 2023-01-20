@@ -27,7 +27,7 @@ const bearerAuthMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 
         return res.status(401).send("no token provided");
     }
     const token = req.headers.authorization.split(' ')[1];
-    const userId = yield jwt_service_1.jwtService.getUserIdByToken(token);
+    const userId = yield jwt_service_1.jwtService.getUserIdByAccessToken(token);
     if (userId) {
         req.user = yield auth_service_1.authService.findUserById(userId);
         next();
