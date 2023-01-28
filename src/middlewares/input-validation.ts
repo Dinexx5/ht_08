@@ -4,7 +4,6 @@ import {blogsQueryRepository} from "../repositories/blogs/blogs-query-repository
 import {blogViewModel, userAccountDbModel} from "../models/models";
 import {ObjectId} from "mongodb";
 import {usersRepository} from "../repositories/users/users-repository-db";
-import {usersService} from "../domain/users-service";
 
 
 const myValidationResult = validationResult.withDefaults({
