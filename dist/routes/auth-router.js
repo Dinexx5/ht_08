@@ -16,6 +16,7 @@ const jwt_service_1 = require("../application/jwt-service");
 const auth_middlewares_1 = require("../middlewares/auth-middlewares");
 const auth_service_1 = require("../domain/auth-service");
 const users_repository_db_1 = require("../repositories/users/users-repository-db");
+const rate_limit_middleware_1 = require("../middlewares/rate-limit-middleware");
 exports.authRouter = (0, express_1.Router)({});
 //emails
 exports.authRouter.post('/registration', input_validation_1.loginValidation, input_validation_1.emailValidation, input_validation_1.passwordValidation, input_validation_1.inputValidationMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -41,7 +42,7 @@ exports.authRouter.post('/registration-confirmation', input_validation_1.confirm
     }
     res.send(204);
 }));
-exports.authRouter.post('/login', input_validation_1.loginOrEmailValidation, input_validation_1.passwordAuthValidation, input_validation_1.inputValidationMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.authRouter.post('/login', rate_limit_middleware_1.requestsLimiter, input_validation_1.loginOrEmailValidation, input_validation_1.passwordAuthValidation, input_validation_1.inputValidationMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield auth_service_1.authService.checkCredentials(req.body);
     if (!user) {
         res.clearCookie('refreshToken');

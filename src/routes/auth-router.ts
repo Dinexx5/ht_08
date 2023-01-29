@@ -17,6 +17,7 @@ import {jwtService} from "../application/jwt-service";
 import {bearerAuthMiddleware} from "../middlewares/auth-middlewares";
 import {authService} from "../domain/auth-service";
 import {usersRepository} from "../repositories/users/users-repository-db";
+import {requestsLimiter} from "../middlewares/rate-limit-middleware";
 
 
 
@@ -26,6 +27,7 @@ export const authRouter = Router({})
 //emails
 
 authRouter.post('/registration',
+    requestsLimiter,
     loginValidation,
     emailValidation,
     passwordValidation,
@@ -42,6 +44,7 @@ authRouter.post('/registration',
 })
 
 authRouter.post('/registration-email-resending',
+    requestsLimiter,
     emailValidationForResending,
     inputValidationMiddleware,
     async(req: RequestWithBody<resendEmailModel>, res: Response) => {
@@ -57,6 +60,7 @@ authRouter.post('/registration-email-resending',
 })
 
 authRouter.post('/registration-confirmation',
+    requestsLimiter,
     confirmationCodeValidation,
     inputValidationMiddleware,
     async(req: RequestWithBody<registrationConfirmationInput>, res: Response) => {
@@ -71,6 +75,7 @@ authRouter.post('/registration-confirmation',
 
 
 authRouter.post('/login',
+    requestsLimiter,
     loginOrEmailValidation,
     passwordAuthValidation,
     inputValidationMiddleware,
