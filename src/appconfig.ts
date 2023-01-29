@@ -7,14 +7,16 @@ import {usersRouter} from "./routes/users-router";
 import {authRouter} from "./routes/auth-router";
 import {commentsRouter} from "./routes/comments-router";
 import cookieParser from 'cookie-parser';
+import {devicesRouter} from "./routes/device-router";
 
 
 export const app = express()
 export const port = 3001
 
-const parserMiddleware = bodyParser({})
-app.use(parserMiddleware)
 app.use(cookieParser())
+app.use(bodyParser.urlencoded());
+app.use(bodyParser.json());
+app.set('trust proxy', true)
 
 app.use('/auth', authRouter)
 app.use('/users', usersRouter)
@@ -22,4 +24,5 @@ app.use('/posts', postsRouter)
 app.use('/blogs', blogsRouter)
 app.use('/testing', testingRouter)
 app.use('/comments', commentsRouter)
+app.use('/security/devices', devicesRouter)
 

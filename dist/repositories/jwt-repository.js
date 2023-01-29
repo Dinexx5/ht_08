@@ -15,13 +15,12 @@ exports.jwtRepository = {
     saveRefreshTokenForUser(newDbToken) {
         return __awaiter(this, void 0, void 0, function* () {
             yield db_1.tokenCollection.insertOne(newDbToken);
-            return newDbToken.token;
         });
     },
-    updateRefreshTokenForUser(newDbToken) {
+    updateRefreshTokenForUser(expirationDate, newExpirationDate, newIssuedAt) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield db_1.tokenCollection.updateOne({ userId: newDbToken.userId }, { $set: { token: newDbToken.token } });
-            return newDbToken.token;
+            const result = yield db_1.tokenCollection.updateOne({ expiredAt: expirationDate }, { $set: { expiredAt: newExpirationDate, issuedAt: newIssuedAt } });
+            return result.modifiedCount === 1;
         });
     },
     findToken(refreshToken) {
@@ -33,10 +32,16 @@ exports.jwtRepository = {
             return true;
         });
     },
-    deleteToken(refreshToken) {
+    deleteSession(expirationDate) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield db_1.tokenCollection.deleteOne({ token: refreshToken });
+            const result = yield db_1.tokenCollection.deleteOne({ expiredAt: expirationDate });
             return result.deletedCount === 1;
+        });
+    },
+    findRefreshTokenByExpirationDate(expirationDate) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const foundToken = yield db_1.tokenCollection.findOne({ expiredAt: expirationDate });
+            return foundToken;
         });
     }
 };

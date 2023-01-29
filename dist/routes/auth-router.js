@@ -15,7 +15,6 @@ const input_validation_1 = require("../middlewares/input-validation");
 const jwt_service_1 = require("../application/jwt-service");
 const auth_middlewares_1 = require("../middlewares/auth-middlewares");
 const auth_service_1 = require("../domain/auth-service");
-const jwt_repository_1 = require("../repositories/jwt-repository");
 const users_repository_db_1 = require("../repositories/users/users-repository-db");
 exports.authRouter = (0, express_1.Router)({});
 //emails
@@ -49,11 +48,13 @@ exports.authRouter.post('/login', input_validation_1.loginOrEmailValidation, inp
         res.send(401);
         return;
     }
+    const ip = req.ip;
+    const deviceName = req.headers['user-agent'];
     const accessToken = yield jwt_service_1.jwtService.createJWTAccessToken(user);
-    const refreshToken = yield jwt_service_1.jwtService.createJWTRefreshToken(user);
+    const refreshToken = yield jwt_service_1.jwtService.createJWTRefreshToken(user, deviceName, ip);
     res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
-        secure: true
+        secure: false
     });
     res.json({ 'accessToken': accessToken });
 }));
@@ -65,26 +66,23 @@ exports.authRouter.post('/refresh-token', (req, res) => __awaiter(void 0, void 0
         return;
     }
     const userId = yield jwt_service_1.jwtService.getUserIdByRefreshToken(refreshToken);
-    const isTokenActive = yield jwt_repository_1.jwtRepository.findToken(refreshToken);
     if (!userId) {
         res.clearCookie('refreshToken');
         console.log('no user id');
         res.send(401);
         return;
     }
-    if (!isTokenActive) {
-        res.clearCookie('refreshToken');
-        console.log('not active token');
+    const user = yield users_repository_db_1.usersRepository.findUserById(userId);
+    const newAccessToken = yield jwt_service_1.jwtService.createJWTAccessToken(user);
+    const isRefreshTokenActive = yield jwt_service_1.jwtService.checkRefreshToken(refreshToken);
+    if (!isRefreshTokenActive) {
         res.send(401);
         return;
     }
-    const user = yield users_repository_db_1.usersRepository.findUserById(userId);
-    const newAccessToken = yield jwt_service_1.jwtService.createJWTAccessToken(user);
-    const newRefreshToken = yield jwt_service_1.jwtService.createNewJWTRefreshToken(user);
-    yield jwt_service_1.jwtService.deletePreviousRefreshToken(refreshToken);
+    const newRefreshToken = yield jwt_service_1.jwtService.updateJWTRefreshToken(refreshToken);
     res.cookie('refreshToken', newRefreshToken, {
         httpOnly: true,
-        secure: true
+        secure: false
     });
     res.json({ 'accessToken': newAccessToken });
 }));
@@ -95,18 +93,17 @@ exports.authRouter.post('/logout', (req, res) => __awaiter(void 0, void 0, void 
         return;
     }
     const userId = yield jwt_service_1.jwtService.getUserIdByRefreshToken(refreshToken);
-    const isTokenActive = yield jwt_repository_1.jwtRepository.findToken(refreshToken);
     if (!userId) {
         res.clearCookie('refreshToken');
         res.send(401);
         return;
     }
-    if (!isTokenActive) {
-        res.clearCookie('refreshToken');
+    const isRefreshTokenActive = yield jwt_service_1.jwtService.checkRefreshToken(refreshToken);
+    if (!isRefreshTokenActive) {
         res.send(401);
         return;
     }
-    yield jwt_service_1.jwtService.deletePreviousRefreshToken(refreshToken);
+    yield jwt_service_1.jwtService.deleteSession(refreshToken);
     res.clearCookie('refreshToken');
     return res.send(204);
 }));
