@@ -149,6 +149,25 @@ export type paginationQuerys = {
     searchEmailTerm?: string
 }
 export type refreshTokenModel = {
-    token: string,
+    issuedAt: string
+    deviceId: string
+    deviceName: string
+    ip: string
     userId: Object
+    expiredAt: string
+}
+export type deviceDbModel = {
+    _id: object
+    userId: object
+    ip: string
+    title: string
+    lastActiveDate: string
+    deviceId: string
+}
+
+export type deviceViewModel = {
+    ip: string
+    title: string
+    lastActiveDate: string
+    deviceId: string
 }

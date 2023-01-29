@@ -16,8 +16,8 @@ import {
 import {jwtService} from "../application/jwt-service";
 import {bearerAuthMiddleware} from "../middlewares/auth-middlewares";
 import {authService} from "../domain/auth-service";
-import {jwtRepository} from "../repositories/jwt-repository";
 import {usersRepository} from "../repositories/users/users-repository-db";
+import {requestsLimiter} from "../middlewares/rate-limit-middleware";
 
 
 
@@ -27,6 +27,7 @@ export const authRouter = Router({})
 //emails
 
 authRouter.post('/registration',
+    requestsLimiter,
     loginValidation,
     emailValidation,
     passwordValidation,
@@ -43,6 +44,7 @@ authRouter.post('/registration',
 })
 
 authRouter.post('/registration-email-resending',
+    requestsLimiter,
     emailValidationForResending,
     inputValidationMiddleware,
     async(req: RequestWithBody<resendEmailModel>, res: Response) => {
@@ -58,6 +60,7 @@ authRouter.post('/registration-email-resending',
 })
 
 authRouter.post('/registration-confirmation',
+    requestsLimiter,
     confirmationCodeValidation,
     inputValidationMiddleware,
     async(req: RequestWithBody<registrationConfirmationInput>, res: Response) => {
@@ -72,6 +75,7 @@ authRouter.post('/registration-confirmation',
 
 
 authRouter.post('/login',
+    requestsLimiter,
     loginOrEmailValidation,
     passwordAuthValidation,
     inputValidationMiddleware,
@@ -82,8 +86,10 @@ authRouter.post('/login',
             res.send(401)
             return
         }
+        const ip = req.ip
+        const deviceName = req.headers['user-agent']!
         const accessToken = await jwtService.createJWTAccessToken(user)
-        const refreshToken = await jwtService.createJWTRefreshToken(user)
+        const refreshToken = await jwtService.createJWTRefreshToken(user,deviceName,ip)
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: true
@@ -101,23 +107,20 @@ authRouter.post('/refresh-token',
         return
     }
     const userId = await jwtService.getUserIdByRefreshToken(refreshToken)
-    const isTokenActive = await jwtRepository.findToken(refreshToken)
     if (!userId) {
         res.clearCookie('refreshToken')
         console.log('no user id')
         res.send(401)
         return
     }
-    if (!isTokenActive) {
-        res.clearCookie('refreshToken')
-        console.log('not active token')
+    const user = await usersRepository.findUserById(userId)
+    const newAccessToken = await jwtService.createJWTAccessToken(user)
+    const isRefreshTokenActive: boolean = await jwtService.checkRefreshToken(refreshToken)
+    if(!isRefreshTokenActive) {
         res.send(401)
         return
     }
-    const user = await usersRepository.findUserById(userId)
-    const newAccessToken = await jwtService.createJWTAccessToken(user)
-    const newRefreshToken = await jwtService.createNewJWTRefreshToken(user)
-    await jwtService.deletePreviousRefreshToken(refreshToken)
+    const newRefreshToken = await jwtService.updateJWTRefreshToken(refreshToken)
     res.cookie('refreshToken', newRefreshToken, {
         httpOnly: true,
         secure: true
@@ -134,18 +137,17 @@ authRouter.post('/logout',
             return
         }
         const userId = await jwtService.getUserIdByRefreshToken(refreshToken)
-        const isTokenActive = await jwtRepository.findToken(refreshToken)
         if (!userId) {
             res.clearCookie('refreshToken')
             res.send(401)
             return
         }
-        if (!isTokenActive) {
-            res.clearCookie('refreshToken')
+        const isRefreshTokenActive: boolean = await jwtService.checkRefreshToken(refreshToken)
+        if(!isRefreshTokenActive) {
             res.send(401)
             return
         }
-        await jwtService.deletePreviousRefreshToken(refreshToken)
+        await jwtService.deleteSession(refreshToken)
         res.clearCookie('refreshToken')
         return res.send(204)
 

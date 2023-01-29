@@ -1,6 +1,13 @@
 import {MongoClient} from "mongodb";
 import * as dotenv from 'dotenv'
-import {blogDbModel, commentDbModel, postDbModel, refreshTokenModel, userAccountDbModel} from "../models/models";
+import {
+    blogDbModel,
+    commentDbModel,
+    deviceDbModel,
+    postDbModel,
+    refreshTokenModel,
+    userAccountDbModel
+} from "../models/models";
 dotenv.config()
 
 
@@ -19,6 +26,7 @@ export const postsCollection = db.collection<postDbModel>("posts")
 export const userAccountsCollection = db.collection<userAccountDbModel>("userAccounts")
 export const commentsCollection = db.collection<commentDbModel>("comments")
 export const tokenCollection = db.collection<refreshTokenModel>("tokens")
+export const devicesCollection = db.collection<deviceDbModel>("devices")
 
 
 export async function runDb() {

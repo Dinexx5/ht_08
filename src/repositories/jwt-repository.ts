@@ -4,14 +4,14 @@ import {refreshTokenModel} from "../models/models";
 
 export const jwtRepository = {
 
-    async saveRefreshTokenForUser(newDbToken: refreshTokenModel): Promise<string> {
+    async saveRefreshTokenForUser(newDbToken: refreshTokenModel) {
         await tokenCollection.insertOne(newDbToken)
-        return newDbToken.token
+
     },
 
-    async updateRefreshTokenForUser(newDbToken: refreshTokenModel): Promise<string> {
-        await tokenCollection.updateOne( {userId: newDbToken.userId}, {$set: {token: newDbToken.token} } )
-        return newDbToken.token
+    async updateRefreshTokenForUser(expirationDate: string, newExpirationDate: string, newIssuedAt: string): Promise<boolean> {
+        const result = await tokenCollection.updateOne( {expiredAt: expirationDate}, {$set: {expiredAt: newExpirationDate, issuedAt: newIssuedAt} } )
+        return result.modifiedCount === 1
     },
 
     async findToken(refreshToken: string): Promise<boolean> {
@@ -22,8 +22,12 @@ export const jwtRepository = {
         return true
     },
 
-    async deleteToken(refreshToken: string): Promise<boolean> {
-        const result = await tokenCollection.deleteOne({token: refreshToken})
+    async deleteSession(expirationDate: string): Promise<boolean> {
+        const result = await tokenCollection.deleteOne({expiredAt: expirationDate})
         return result.deletedCount === 1
+    },
+    async findRefreshTokenByExpirationDate(expirationDate: string): Promise<refreshTokenModel | null> {
+        const foundToken = await tokenCollection.findOne({expiredAt: expirationDate})
+        return foundToken
     }
 }
