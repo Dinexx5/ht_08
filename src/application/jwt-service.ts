@@ -10,14 +10,14 @@ import {devicesRepository} from "../repositories/devices/devices-repository";
 export const jwtService = {
 
     async createJWTAccessToken(user: userAccountDbModel): Promise<string> {
-        return jwt.sign({userId: user._id}, settings.JWT_ACCESS_SECRET, {expiresIn: "1000s"})
+        return jwt.sign({userId: user._id}, settings.JWT_ACCESS_SECRET, {expiresIn: "10s"})
 
     },
 
     async createJWTRefreshToken(user: userAccountDbModel, deviceName: string, ip: string): Promise<string> {
 
         const deviceId = new Date().toISOString()
-        const refreshToken = jwt.sign({userId: user._id, deviceId: deviceId}, settings.JWT_REFRESH_SECRET, {expiresIn: "2000s"})
+        const refreshToken = jwt.sign({userId: user._id, deviceId: deviceId}, settings.JWT_REFRESH_SECRET, {expiresIn: "20s"})
         const result = await this.getTokenInfo(refreshToken)
         const issuedAt = new Date(result.iat*1000).toISOString()
         console.log(result)
@@ -48,7 +48,7 @@ export const jwtService = {
     async updateJWTRefreshToken(refreshToken: string): Promise<string> {
         const result: any = jwt.verify(refreshToken,settings.JWT_REFRESH_SECRET)
         const {deviceId, userId, exp} = result
-        const newRefreshToken = jwt.sign({userId: userId, deviceId: deviceId}, settings.JWT_REFRESH_SECRET, {expiresIn: "2000s"})
+        const newRefreshToken = jwt.sign({userId: userId, deviceId: deviceId}, settings.JWT_REFRESH_SECRET, {expiresIn: "20s"})
         const newResult: any = await this.getTokenInfo(newRefreshToken)
         console.log(newResult)
         const newExpirationDate = new Date(newResult.exp*1000).toISOString()

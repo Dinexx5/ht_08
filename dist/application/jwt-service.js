@@ -21,13 +21,13 @@ const devices_repository_1 = require("../repositories/devices/devices-repository
 exports.jwtService = {
     createJWTAccessToken(user) {
         return __awaiter(this, void 0, void 0, function* () {
-            return jsonwebtoken_1.default.sign({ userId: user._id }, settings_1.settings.JWT_ACCESS_SECRET, { expiresIn: "1000s" });
+            return jsonwebtoken_1.default.sign({ userId: user._id }, settings_1.settings.JWT_ACCESS_SECRET, { expiresIn: "10s" });
         });
     },
     createJWTRefreshToken(user, deviceName, ip) {
         return __awaiter(this, void 0, void 0, function* () {
             const deviceId = new Date().toISOString();
-            const refreshToken = jsonwebtoken_1.default.sign({ userId: user._id, deviceId: deviceId }, settings_1.settings.JWT_REFRESH_SECRET, { expiresIn: "2000s" });
+            const refreshToken = jsonwebtoken_1.default.sign({ userId: user._id, deviceId: deviceId }, settings_1.settings.JWT_REFRESH_SECRET, { expiresIn: "20s" });
             const result = yield this.getTokenInfo(refreshToken);
             const issuedAt = new Date(result.iat * 1000).toISOString();
             console.log(result);
@@ -56,7 +56,7 @@ exports.jwtService = {
         return __awaiter(this, void 0, void 0, function* () {
             const result = jsonwebtoken_1.default.verify(refreshToken, settings_1.settings.JWT_REFRESH_SECRET);
             const { deviceId, userId, exp } = result;
-            const newRefreshToken = jsonwebtoken_1.default.sign({ userId: userId, deviceId: deviceId }, settings_1.settings.JWT_REFRESH_SECRET, { expiresIn: "2000s" });
+            const newRefreshToken = jsonwebtoken_1.default.sign({ userId: userId, deviceId: deviceId }, settings_1.settings.JWT_REFRESH_SECRET, { expiresIn: "20s" });
             const newResult = yield this.getTokenInfo(newRefreshToken);
             console.log(newResult);
             const newExpirationDate = new Date(newResult.exp * 1000).toISOString();
