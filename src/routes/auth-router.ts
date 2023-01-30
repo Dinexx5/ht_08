@@ -40,11 +40,11 @@ authRouter.post('/registration',
     inputValidationMiddleware,
     async(req: RequestWithBody<createUserInputModel>, res: Response) => {
 
-    const createdAccount = await authService.createUser(req.body)
-    if (!createdAccount) {
-        res.send({"errorsMessages": 'can not send email. try later'})
-        return
-    }
+    // const createdAccount = await authService.createUser(req.body)
+    // if (!createdAccount) {
+    //     res.send({"errorsMessages": 'can not send email. try later'})
+    //     return
+    // }
     return res.send(204)
 
 })
@@ -55,12 +55,12 @@ authRouter.post('/registration-email-resending',
     inputValidationMiddleware,
     async(req: RequestWithBody<resendEmailModel>, res: Response) => {
 
-    const isEmailResend = await authService.resendEmail(req.body.email)
-
-    if (!isEmailResend) {
-        res.send({"errorsMessages": 'can not send email. try later'})
-        return
-    }
+    // const isEmailResend = await authService.resendEmail(req.body.email)
+    //
+    // if (!isEmailResend) {
+    //     res.send({"errorsMessages": 'can not send email. try later'})
+    //     return
+    // }
     res.send(204)
 
 })
