@@ -17,6 +17,7 @@ const auth_middlewares_1 = require("../middlewares/auth-middlewares");
 const auth_service_1 = require("../domain/auth-service");
 const users_repository_db_1 = require("../repositories/users/users-repository-db");
 const rate_limit_middleware_1 = require("../middlewares/rate-limit-middleware");
+const devices_service_1 = require("../domain/devices-service");
 exports.authRouter = (0, express_1.Router)({});
 //emails
 exports.authRouter.post('/registration', rate_limit_middleware_1.requestsLimiter, input_validation_1.loginValidation, input_validation_1.emailValidation, input_validation_1.passwordValidation, input_validation_1.inputValidationMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -25,7 +26,7 @@ exports.authRouter.post('/registration', rate_limit_middleware_1.requestsLimiter
         res.send({ "errorsMessages": 'can not send email. try later' });
         return;
     }
-    res.send(204);
+    return res.send(204);
 }));
 exports.authRouter.post('/registration-email-resending', rate_limit_middleware_1.requestsLimiter, input_validation_1.emailValidationForResending, input_validation_1.inputValidationMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const isEmailResend = yield auth_service_1.authService.resendEmail(req.body.email);
@@ -105,6 +106,7 @@ exports.authRouter.post('/logout', (req, res) => __awaiter(void 0, void 0, void 
         return;
     }
     yield jwt_service_1.jwtService.deleteSession(refreshToken);
+    yield devices_service_1.devicesService.deleteDevice(refreshToken);
     res.clearCookie('refreshToken');
     return res.send(204);
 }));
