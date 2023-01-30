@@ -51,7 +51,7 @@ authRouter.post('/registration',
 
 authRouter.post('/registration-email-resending',
     registrationResendingLimiter,
-    emailValidationForResending,
+    // emailValidationForResending,
     inputValidationMiddleware,
     async(req: RequestWithBody<resendEmailModel>, res: Response) => {
 

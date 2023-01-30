@@ -28,7 +28,9 @@ exports.authRouter.post('/registration', rate_limit_middleware_1.registrationReq
     // }
     return res.send(204);
 }));
-exports.authRouter.post('/registration-email-resending', rate_limit_middleware_1.registrationResendingLimiter, input_validation_1.emailValidationForResending, input_validation_1.inputValidationMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.authRouter.post('/registration-email-resending', rate_limit_middleware_1.registrationResendingLimiter, 
+// emailValidationForResending,
+input_validation_1.inputValidationMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     // const isEmailResend = await authService.resendEmail(req.body.email)
     //
     // if (!isEmailResend) {
