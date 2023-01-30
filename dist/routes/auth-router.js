@@ -20,7 +20,7 @@ const rate_limit_middleware_1 = require("../middlewares/rate-limit-middleware");
 const devices_service_1 = require("../domain/devices-service");
 exports.authRouter = (0, express_1.Router)({});
 //emails
-exports.authRouter.post('/registration', rate_limit_middleware_1.requestsLimiter, input_validation_1.loginValidation, input_validation_1.emailValidation, input_validation_1.passwordValidation, input_validation_1.inputValidationMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.authRouter.post('/registration', rate_limit_middleware_1.registrationRequestsLimiter, input_validation_1.loginValidation, input_validation_1.emailValidation, input_validation_1.passwordValidation, input_validation_1.inputValidationMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const createdAccount = yield auth_service_1.authService.createUser(req.body);
     if (!createdAccount) {
         res.send({ "errorsMessages": 'can not send email. try later' });
@@ -28,7 +28,7 @@ exports.authRouter.post('/registration', rate_limit_middleware_1.requestsLimiter
     }
     return res.send(204);
 }));
-exports.authRouter.post('/registration-email-resending', rate_limit_middleware_1.requestsLimiter, input_validation_1.emailValidationForResending, input_validation_1.inputValidationMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.authRouter.post('/registration-email-resending', rate_limit_middleware_1.registrationResendingLimiter, input_validation_1.emailValidationForResending, input_validation_1.inputValidationMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const isEmailResend = yield auth_service_1.authService.resendEmail(req.body.email);
     if (!isEmailResend) {
         res.send({ "errorsMessages": 'can not send email. try later' });
@@ -36,14 +36,14 @@ exports.authRouter.post('/registration-email-resending', rate_limit_middleware_1
     }
     res.send(204);
 }));
-exports.authRouter.post('/registration-confirmation', rate_limit_middleware_1.requestsLimiter, input_validation_1.confirmationCodeValidation, input_validation_1.inputValidationMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.authRouter.post('/registration-confirmation', rate_limit_middleware_1.registrationConfirmationLimiter, input_validation_1.confirmationCodeValidation, input_validation_1.inputValidationMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const isConfirmed = yield auth_service_1.authService.confirmEmail(req.body.code);
     if (!isConfirmed) {
         return res.send(400);
     }
     res.send(204);
 }));
-exports.authRouter.post('/login', rate_limit_middleware_1.requestsLimiter, input_validation_1.loginOrEmailValidation, input_validation_1.passwordAuthValidation, input_validation_1.inputValidationMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.authRouter.post('/login', rate_limit_middleware_1.loginRequestsLimiter, input_validation_1.loginOrEmailValidation, input_validation_1.passwordAuthValidation, input_validation_1.inputValidationMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield auth_service_1.authService.checkCredentials(req.body);
     if (!user) {
         res.clearCookie('refreshToken');
