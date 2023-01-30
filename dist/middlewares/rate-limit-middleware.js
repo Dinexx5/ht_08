@@ -7,9 +7,6 @@ exports.requestsLimiter = void 0;
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 exports.requestsLimiter = (0, express_rate_limit_1.default)({
     windowMs: 10 * 1000,
-    max: 5,
-    message: 'too many requests from this IP',
-    standardHeaders: false,
-    legacyHeaders: false,
-    handler: (request, response, next, options) => response.status(options.statusCode).send(options.message),
+    max: 4,
+    message: 'too many requests from this IP', // Limit each IP to 100 requests per `window` (here, per 15 minutes)
 });

@@ -18,6 +18,7 @@ import {bearerAuthMiddleware} from "../middlewares/auth-middlewares";
 import {authService} from "../domain/auth-service";
 import {usersRepository} from "../repositories/users/users-repository-db";
 import {requestsLimiter} from "../middlewares/rate-limit-middleware";
+import {devicesService} from "../domain/devices-service";
 
 
 
@@ -39,7 +40,7 @@ authRouter.post('/registration',
         res.send({"errorsMessages": 'can not send email. try later'})
         return
     }
-    res.send(204)
+    return res.send(204)
 
 })
 
@@ -148,6 +149,7 @@ authRouter.post('/logout',
             return
         }
         await jwtService.deleteSession(refreshToken)
+        await devicesService.deleteDevice(refreshToken)
         res.clearCookie('refreshToken')
         return res.send(204)
 
