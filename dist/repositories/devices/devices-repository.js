@@ -25,7 +25,8 @@ exports.devicesRepository = {
     },
     getActiveSessions(userId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const foundDevices = yield db_1.devicesCollection.find({ userId: userId }).toArray();
+            const _id = new mongodb_1.ObjectId(userId);
+            const foundDevices = yield db_1.devicesCollection.find({ userId: _id }).toArray();
             return foundDevices.map(device => ({
                 ip: device.ip,
                 title: device.title,

@@ -12,8 +12,9 @@ export const devicesRepository = {
         await devicesCollection.updateOne({deviceId: deviceId}, {$set: {lastActiveDate: newIssuedAt}})
     },
 
-    async getActiveSessions(userId: object):Promise<deviceViewModel[]> {
-       const foundDevices = await devicesCollection.find({userId: userId}).toArray()
+    async getActiveSessions(userId: string):Promise<deviceViewModel[]> {
+        const _id = new ObjectId(userId)
+        const foundDevices = await devicesCollection.find({userId: _id}).toArray()
         return foundDevices.map(device => ({
             ip: device.ip,
             title: device.title,
