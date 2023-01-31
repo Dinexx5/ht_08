@@ -61,8 +61,8 @@ exports.jwtService = {
             const newResult = yield this.getRefreshTokenInfo(newRefreshToken);
             const newExpiredAt = new Date(newResult.exp * 1000).toISOString();
             const newIssuedAt = new Date(newResult.iat * 1000).toISOString();
-            const expirationDate = new Date(exp * 1000).toISOString();
-            const isUpdated = yield jwt_repository_1.jwtRepository.updateRefreshTokenForUser(expirationDate, newExpiredAt, newIssuedAt);
+            const expiredAt = new Date(exp * 1000).toISOString();
+            const isUpdated = yield jwt_repository_1.jwtRepository.updateRefreshTokenForUser(expiredAt, newExpiredAt, newIssuedAt);
             if (!isUpdated) {
                 console.log('Can not update');
             }

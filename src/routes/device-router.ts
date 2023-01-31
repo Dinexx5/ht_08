@@ -1,31 +1,25 @@
 import {Request, Response, Router} from "express"
 import {jwtService} from "../application/jwt-service";
 import {devicesRepository} from "../repositories/devices/devices-repository";
+import {checkRefreshTokenMiddleware} from "../middlewares/auth-middlewares";
 
 
 export const devicesRouter = Router({})
 
-devicesRouter.get('/', async (req: Request, res: Response) =>{
+devicesRouter.get('/',
+    checkRefreshTokenMiddleware,
+    async (req: Request, res: Response) =>{
     const refreshToken = req.cookies.refreshToken
-    if (!refreshToken) {
-        res.send(401)
-        return
-    }
-    const userId = await jwtService.getUserByRefreshToken(refreshToken)
-    if (!userId) {
-        res.send(401)
-        return
-    }
+    const result = await jwtService.getRefreshTokenInfo(refreshToken)
+    const userId = result.userId
     const foundDevices = await devicesRepository.getActiveSessions(userId)
     return res.send(foundDevices)
 })
 
-devicesRouter.delete('/',async (req: Request, res: Response) => {
+devicesRouter.delete('/',
+    checkRefreshTokenMiddleware,
+    async (req: Request, res: Response) => {
     const refreshToken = req.cookies.refreshToken
-    if (!refreshToken) {
-        res.send(401)
-        return
-    }
     const result: any = await jwtService.getRefreshTokenInfo(refreshToken)
     const {deviceId, userId} = result
     const isDeleted: boolean = await devicesRepository.deleteAllSessions(deviceId, userId)
@@ -35,12 +29,10 @@ devicesRouter.delete('/',async (req: Request, res: Response) => {
     return res.send(204)
 })
 
-devicesRouter.delete('/:deviceId',async (req: Request, res: Response) => {
+devicesRouter.delete('/:deviceId',
+    checkRefreshTokenMiddleware,
+    async (req: Request, res: Response) => {
     const refreshToken = req.cookies.refreshToken
-    if (!refreshToken) {
-        res.send(401)
-        return
-    }
     const result: any = await jwtService.getRefreshTokenInfo(refreshToken)
     const {userId} = result
     const foundDevice = await devicesRepository.findDeviceByDeviceId(req.params.deviceId)

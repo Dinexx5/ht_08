@@ -13,27 +13,17 @@ exports.devicesRouter = void 0;
 const express_1 = require("express");
 const jwt_service_1 = require("../application/jwt-service");
 const devices_repository_1 = require("../repositories/devices/devices-repository");
+const auth_middlewares_1 = require("../middlewares/auth-middlewares");
 exports.devicesRouter = (0, express_1.Router)({});
-exports.devicesRouter.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.devicesRouter.get('/', auth_middlewares_1.checkRefreshTokenMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const refreshToken = req.cookies.refreshToken;
-    if (!refreshToken) {
-        res.send(401);
-        return;
-    }
-    const userId = yield jwt_service_1.jwtService.getUserByRefreshToken(refreshToken);
-    if (!userId) {
-        res.send(401);
-        return;
-    }
+    const result = yield jwt_service_1.jwtService.getRefreshTokenInfo(refreshToken);
+    const userId = result.userId;
     const foundDevices = yield devices_repository_1.devicesRepository.getActiveSessions(userId);
     return res.send(foundDevices);
 }));
-exports.devicesRouter.delete('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.devicesRouter.delete('/', auth_middlewares_1.checkRefreshTokenMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const refreshToken = req.cookies.refreshToken;
-    if (!refreshToken) {
-        res.send(401);
-        return;
-    }
     const result = yield jwt_service_1.jwtService.getRefreshTokenInfo(refreshToken);
     const { deviceId, userId } = result;
     const isDeleted = yield devices_repository_1.devicesRepository.deleteAllSessions(deviceId, userId);
@@ -42,12 +32,8 @@ exports.devicesRouter.delete('/', (req, res) => __awaiter(void 0, void 0, void 0
     }
     return res.send(204);
 }));
-exports.devicesRouter.delete('/:deviceId', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.devicesRouter.delete('/:deviceId', auth_middlewares_1.checkRefreshTokenMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const refreshToken = req.cookies.refreshToken;
-    if (!refreshToken) {
-        res.send(401);
-        return;
-    }
     const result = yield jwt_service_1.jwtService.getRefreshTokenInfo(refreshToken);
     const { userId } = result;
     const foundDevice = yield devices_repository_1.devicesRepository.findDeviceByDeviceId(req.params.deviceId);
