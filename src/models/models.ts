@@ -156,6 +156,13 @@ export type refreshTokenModel = {
     userId: Object
     expiredAt: string
 }
+export type createDeviceInputModel = {
+    user: userAccountDbModel,
+    ip: string,
+    deviceId: string,
+    deviceName: string,
+    issuedAt: string
+}
 export type deviceDbModel = {
     _id: object
     userId: object

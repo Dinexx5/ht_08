@@ -11,7 +11,7 @@ devicesRouter.get('/', async (req: Request, res: Response) =>{
         res.send(401)
         return
     }
-    const userId = await jwtService.getUserIdByRefreshToken(refreshToken)
+    const userId = await jwtService.getUserByRefreshToken(refreshToken)
     if (!userId) {
         res.send(401)
         return
@@ -26,7 +26,7 @@ devicesRouter.delete('/',async (req: Request, res: Response) => {
         res.send(401)
         return
     }
-    const result: any = await jwtService.getTokenInfo(refreshToken)
+    const result: any = await jwtService.getRefreshTokenInfo(refreshToken)
     const {deviceId, userId} = result
     const isDeleted: boolean = await devicesRepository.deleteAllSessions(deviceId, userId)
     if (!isDeleted) {
@@ -41,7 +41,7 @@ devicesRouter.delete('/:deviceId',async (req: Request, res: Response) => {
         res.send(401)
         return
     }
-    const result: any = await jwtService.getTokenInfo(refreshToken)
+    const result: any = await jwtService.getRefreshTokenInfo(refreshToken)
     const {userId} = result
     const foundDevice = await devicesRepository.findDeviceByDeviceId(req.params.deviceId)
     if (!foundDevice) {

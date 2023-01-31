@@ -20,7 +20,7 @@ exports.devicesRouter.get('/', (req, res) => __awaiter(void 0, void 0, void 0, f
         res.send(401);
         return;
     }
-    const userId = yield jwt_service_1.jwtService.getUserIdByRefreshToken(refreshToken);
+    const userId = yield jwt_service_1.jwtService.getUserByRefreshToken(refreshToken);
     if (!userId) {
         res.send(401);
         return;
@@ -34,7 +34,7 @@ exports.devicesRouter.delete('/', (req, res) => __awaiter(void 0, void 0, void 0
         res.send(401);
         return;
     }
-    const result = yield jwt_service_1.jwtService.getTokenInfo(refreshToken);
+    const result = yield jwt_service_1.jwtService.getRefreshTokenInfo(refreshToken);
     const { deviceId, userId } = result;
     const isDeleted = yield devices_repository_1.devicesRepository.deleteAllSessions(deviceId, userId);
     if (!isDeleted) {
@@ -48,7 +48,7 @@ exports.devicesRouter.delete('/:deviceId', (req, res) => __awaiter(void 0, void 
         res.send(401);
         return;
     }
-    const result = yield jwt_service_1.jwtService.getTokenInfo(refreshToken);
+    const result = yield jwt_service_1.jwtService.getRefreshTokenInfo(refreshToken);
     const { userId } = result;
     const foundDevice = yield devices_repository_1.devicesRepository.findDeviceByDeviceId(req.params.deviceId);
     if (!foundDevice) {

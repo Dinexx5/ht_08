@@ -5,23 +5,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.loginRequestsLimiter = exports.registrationConfirmationLimiter = exports.registrationResendingLimiter = exports.registrationRequestsLimiter = void 0;
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
-exports.registrationRequestsLimiter = (0, express_rate_limit_1.default)({
+const limiterOptions = {
     windowMs: 10 * 1000,
     max: 5,
-    message: 'too many requests from this IP', // Limit each IP to 100 requests per `window` (here, per 15 minutes)
-});
-exports.registrationResendingLimiter = (0, express_rate_limit_1.default)({
-    windowMs: 10 * 1000,
-    max: 5,
-    message: 'too many requests from this IP', // Limit each IP to 100 requests per `window` (here, per 15 minutes)
-});
-exports.registrationConfirmationLimiter = (0, express_rate_limit_1.default)({
-    windowMs: 10 * 1000,
-    max: 5,
-    message: 'too many requests from this IP', // Limit each IP to 100 requests per `window` (here, per 15 minutes)
-});
-exports.loginRequestsLimiter = (0, express_rate_limit_1.default)({
-    windowMs: 10 * 1000,
-    max: 5,
-    message: 'too many requests from this IP', // Limit each IP to 100 requests per `window` (here, per 15 minutes)
-});
+    message: 'too many requests from this IP',
+};
+exports.registrationRequestsLimiter = (0, express_rate_limit_1.default)(limiterOptions);
+exports.registrationResendingLimiter = (0, express_rate_limit_1.default)(limiterOptions);
+exports.registrationConfirmationLimiter = (0, express_rate_limit_1.default)(limiterOptions);
+exports.loginRequestsLimiter = (0, express_rate_limit_1.default)(limiterOptions);

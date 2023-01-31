@@ -4,7 +4,7 @@ import {refreshTokenModel} from "../models/models";
 
 export const jwtRepository = {
 
-    async saveRefreshTokenForUser(newDbToken: refreshTokenModel) {
+    async saveRefreshTokenMeta(newDbToken: refreshTokenModel) {
         await tokenCollection.insertOne(newDbToken)
 
     },
@@ -26,8 +26,11 @@ export const jwtRepository = {
         const result = await tokenCollection.deleteOne({expiredAt: expirationDate})
         return result.deletedCount === 1
     },
-    async findRefreshTokenByExpirationDate(expirationDate: string): Promise<refreshTokenModel | null> {
+    async findRefreshTokenByExpirationDate(expirationDate: string): Promise<boolean> {
         const foundToken = await tokenCollection.findOne({expiredAt: expirationDate})
-        return foundToken
+        if (!foundToken) {
+            return false
+        }
+        return true
     }
 }

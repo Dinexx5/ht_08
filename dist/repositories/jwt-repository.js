@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.jwtRepository = void 0;
 const db_1 = require("./db");
 exports.jwtRepository = {
-    saveRefreshTokenForUser(newDbToken) {
+    saveRefreshTokenMeta(newDbToken) {
         return __awaiter(this, void 0, void 0, function* () {
             yield db_1.tokenCollection.insertOne(newDbToken);
         });
@@ -41,7 +41,10 @@ exports.jwtRepository = {
     findRefreshTokenByExpirationDate(expirationDate) {
         return __awaiter(this, void 0, void 0, function* () {
             const foundToken = yield db_1.tokenCollection.findOne({ expiredAt: expirationDate });
-            return foundToken;
+            if (!foundToken) {
+                return false;
+            }
+            return true;
         });
     }
 };

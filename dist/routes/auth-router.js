@@ -15,7 +15,6 @@ const input_validation_1 = require("../middlewares/input-validation");
 const jwt_service_1 = require("../application/jwt-service");
 const auth_middlewares_1 = require("../middlewares/auth-middlewares");
 const auth_service_1 = require("../domain/auth-service");
-const users_repository_db_1 = require("../repositories/users/users-repository-db");
 const rate_limit_middleware_1 = require("../middlewares/rate-limit-middleware");
 const devices_service_1 = require("../domain/devices-service");
 exports.authRouter = (0, express_1.Router)({});
@@ -47,8 +46,7 @@ exports.authRouter.post('/login', rate_limit_middleware_1.loginRequestsLimiter, 
     const user = yield auth_service_1.authService.checkCredentials(req.body);
     if (!user) {
         res.clearCookie('refreshToken');
-        res.send(401);
-        return;
+        return res.send(401);
     }
     const ip = req.ip;
     const deviceName = req.headers['user-agent'];
@@ -60,27 +58,10 @@ exports.authRouter.post('/login', rate_limit_middleware_1.loginRequestsLimiter, 
     });
     res.json({ 'accessToken': accessToken });
 }));
-exports.authRouter.post('/refresh-token', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.authRouter.post('/refresh-token', auth_middlewares_1.checkRefreshTokenMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const refreshToken = req.cookies.refreshToken;
-    if (!req.cookies.refreshToken) {
-        console.log('!cookie');
-        res.send(401);
-        return;
-    }
-    const userId = yield jwt_service_1.jwtService.getUserIdByRefreshToken(refreshToken);
-    if (!userId) {
-        res.clearCookie('refreshToken');
-        console.log('no user id');
-        res.send(401);
-        return;
-    }
-    const user = yield users_repository_db_1.usersRepository.findUserById(userId);
+    const user = yield jwt_service_1.jwtService.getUserByRefreshToken(refreshToken);
     const newAccessToken = yield jwt_service_1.jwtService.createJWTAccessToken(user);
-    const isRefreshTokenActive = yield jwt_service_1.jwtService.checkRefreshToken(refreshToken);
-    if (!isRefreshTokenActive) {
-        res.send(401);
-        return;
-    }
     const newRefreshToken = yield jwt_service_1.jwtService.updateJWTRefreshToken(refreshToken);
     res.cookie('refreshToken', newRefreshToken, {
         httpOnly: true,
@@ -88,23 +69,8 @@ exports.authRouter.post('/refresh-token', (req, res) => __awaiter(void 0, void 0
     });
     res.json({ 'accessToken': newAccessToken });
 }));
-exports.authRouter.post('/logout', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.authRouter.post('/logout', auth_middlewares_1.checkRefreshTokenMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const refreshToken = req.cookies.refreshToken;
-    if (!req.cookies.refreshToken) {
-        res.send(401);
-        return;
-    }
-    const userId = yield jwt_service_1.jwtService.getUserIdByRefreshToken(refreshToken);
-    if (!userId) {
-        res.clearCookie('refreshToken');
-        res.send(401);
-        return;
-    }
-    const isRefreshTokenActive = yield jwt_service_1.jwtService.checkRefreshToken(refreshToken);
-    if (!isRefreshTokenActive) {
-        res.send(401);
-        return;
-    }
     yield jwt_service_1.jwtService.deleteSession(refreshToken);
     yield devices_service_1.devicesService.deleteDevice(refreshToken);
     res.clearCookie('refreshToken');

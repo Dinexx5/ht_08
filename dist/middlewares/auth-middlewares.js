@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.bearerAuthMiddleware = exports.basicAuthMiddleware = void 0;
+exports.checkRefreshTokenMiddleware = exports.bearerAuthMiddleware = exports.basicAuthMiddleware = void 0;
 const jwt_service_1 = require("../application/jwt-service");
 const auth_service_1 = require("../domain/auth-service");
 const basicAuthMiddleware = (req, res, next) => {
@@ -36,3 +36,17 @@ const bearerAuthMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 
     return res.status(401).send("user not found");
 });
 exports.bearerAuthMiddleware = bearerAuthMiddleware;
+const checkRefreshTokenMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const refreshToken = req.cookies.refreshToken;
+    if (!req.cookies.refreshToken) {
+        res.send(401);
+        return;
+    }
+    const isRefreshTokenActive = yield jwt_service_1.jwtService.checkRefreshTokenInDb(refreshToken);
+    if (!isRefreshTokenActive) {
+        res.send(401);
+        return;
+    }
+    return next();
+});
+exports.checkRefreshTokenMiddleware = checkRefreshTokenMiddleware;

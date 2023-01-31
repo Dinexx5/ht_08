@@ -18,6 +18,7 @@ const mongodb_1 = require("mongodb");
 const settings_1 = require("../settings");
 const jwt_repository_1 = require("../repositories/jwt-repository");
 const devices_repository_1 = require("../repositories/devices/devices-repository");
+const users_repository_db_1 = require("../repositories/users/users-repository-db");
 exports.jwtService = {
     createJWTAccessToken(user) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -28,18 +29,18 @@ exports.jwtService = {
         return __awaiter(this, void 0, void 0, function* () {
             const deviceId = new Date().toISOString();
             const refreshToken = jsonwebtoken_1.default.sign({ userId: user._id, deviceId: deviceId }, settings_1.settings.JWT_REFRESH_SECRET, { expiresIn: "20s" });
-            const result = yield this.getTokenInfo(refreshToken);
+            const result = yield this.getRefreshTokenInfo(refreshToken);
             const issuedAt = new Date(result.iat * 1000).toISOString();
-            console.log(result);
-            const dbToken = {
+            const expiredAt = new Date(result.exp * 1000).toISOString();
+            const tokenMeta = {
                 issuedAt: issuedAt,
                 userId: user._id,
                 deviceId: deviceId,
                 deviceName: deviceName,
                 ip: ip,
-                expiredAt: new Date(result.exp * 1000).toISOString()
+                expiredAt: expiredAt
             };
-            yield jwt_repository_1.jwtRepository.saveRefreshTokenForUser(dbToken);
+            yield jwt_repository_1.jwtRepository.saveRefreshTokenMeta(tokenMeta);
             const newDevice = {
                 _id: new mongodb_1.ObjectId(),
                 userId: user._id,
@@ -54,15 +55,14 @@ exports.jwtService = {
     },
     updateJWTRefreshToken(refreshToken) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = jsonwebtoken_1.default.verify(refreshToken, settings_1.settings.JWT_REFRESH_SECRET);
+            const result = this.getRefreshTokenInfo(refreshToken);
             const { deviceId, userId, exp } = result;
             const newRefreshToken = jsonwebtoken_1.default.sign({ userId: userId, deviceId: deviceId }, settings_1.settings.JWT_REFRESH_SECRET, { expiresIn: "20s" });
-            const newResult = yield this.getTokenInfo(newRefreshToken);
-            console.log(newResult);
-            const newExpirationDate = new Date(newResult.exp * 1000).toISOString();
+            const newResult = yield this.getRefreshTokenInfo(newRefreshToken);
+            const newExpiredAt = new Date(newResult.exp * 1000).toISOString();
             const newIssuedAt = new Date(newResult.iat * 1000).toISOString();
             const expirationDate = new Date(exp * 1000).toISOString();
-            const isUpdated = yield jwt_repository_1.jwtRepository.updateRefreshTokenForUser(expirationDate, newExpirationDate, newIssuedAt);
+            const isUpdated = yield jwt_repository_1.jwtRepository.updateRefreshTokenForUser(expirationDate, newExpiredAt, newIssuedAt);
             if (!isUpdated) {
                 console.log('Can not update');
             }
@@ -72,7 +72,7 @@ exports.jwtService = {
     },
     deleteSession(token) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield this.getTokenInfo(token);
+            const result = yield this.getRefreshTokenInfo(token);
             const expirationDate = new Date(result.exp * 1000).toISOString();
             return jwt_repository_1.jwtRepository.deleteSession(expirationDate);
         });
@@ -88,18 +88,14 @@ exports.jwtService = {
             }
         });
     },
-    getUserIdByRefreshToken(token) {
+    getUserByRefreshToken(token) {
         return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const result = jsonwebtoken_1.default.verify(token, settings_1.settings.JWT_REFRESH_SECRET);
-                return new mongodb_1.ObjectId(result.userId);
-            }
-            catch (error) {
-                return null;
-            }
+            const result = jsonwebtoken_1.default.verify(token, settings_1.settings.JWT_REFRESH_SECRET);
+            const userId = new mongodb_1.ObjectId(result.userId);
+            return yield users_repository_db_1.usersRepository.findUserById(userId);
         });
     },
-    getTokenInfo(token) {
+    getRefreshTokenInfo(token) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const result = jsonwebtoken_1.default.verify(token, settings_1.settings.JWT_REFRESH_SECRET);
@@ -110,19 +106,16 @@ exports.jwtService = {
             }
         });
     },
-    checkRefreshToken(refreshToken) {
+    checkRefreshTokenInDb(refreshToken) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield jsonwebtoken_1.default.verify(refreshToken, settings_1.settings.JWT_REFRESH_SECRET);
-            const expirationDate = new Date(result.exp * 1000).toISOString();
-            const currentDate = new Date().toISOString();
-            const foundToken = yield jwt_repository_1.jwtRepository.findRefreshTokenByExpirationDate(expirationDate);
-            if (!foundToken) {
+            try {
+                const result = yield jsonwebtoken_1.default.verify(refreshToken, settings_1.settings.JWT_REFRESH_SECRET);
+                const expirationDate = new Date(result.exp * 1000).toISOString();
+                return yield jwt_repository_1.jwtRepository.findRefreshTokenByExpirationDate(expirationDate);
+            }
+            catch (error) {
                 return false;
             }
-            if (expirationDate < currentDate) {
-                return false;
-            }
-            return true;
         });
     }
 };

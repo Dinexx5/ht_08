@@ -15,7 +15,7 @@ const devices_repository_1 = require("../repositories/devices/devices-repository
 exports.devicesService = {
     deleteDevice(refreshToken) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield jwt_service_1.jwtService.getTokenInfo(refreshToken);
+            const result = yield jwt_service_1.jwtService.getRefreshTokenInfo(refreshToken);
             const deviceId = result.deviceId;
             return yield devices_repository_1.devicesRepository.deleteSessionById(deviceId);
         });

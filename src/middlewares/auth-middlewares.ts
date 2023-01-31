@@ -24,3 +24,17 @@ export const bearerAuthMiddleware = async (req:Request, res:Response, next: Next
     }
     return res.status(401).send("user not found")
 }
+
+export const checkRefreshTokenMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+    const refreshToken = req.cookies.refreshToken
+    if (!req.cookies.refreshToken) {
+        res.send(401)
+        return
+    }
+    const isRefreshTokenActive: boolean = await jwtService.checkRefreshTokenInDb(refreshToken)
+    if(!isRefreshTokenActive) {
+        res.send(401)
+        return
+    }
+    return next()
+}

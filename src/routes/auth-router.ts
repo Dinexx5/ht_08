@@ -14,9 +14,8 @@ import {
     passwordAuthValidation, passwordValidation,
 } from "../middlewares/input-validation";
 import {jwtService} from "../application/jwt-service";
-import {bearerAuthMiddleware} from "../middlewares/auth-middlewares";
+import {bearerAuthMiddleware, checkRefreshTokenMiddleware} from "../middlewares/auth-middlewares";
 import {authService} from "../domain/auth-service";
-import {usersRepository} from "../repositories/users/users-repository-db";
 import {
     loginRequestsLimiter,
     registrationConfirmationLimiter,
@@ -86,73 +85,42 @@ authRouter.post('/login',
     passwordAuthValidation,
     inputValidationMiddleware,
     async(req: RequestWithBody<authInputModel>, res: Response) => {
-        const user = await authService.checkCredentials(req.body)
-        if (!user) {
-            res.clearCookie('refreshToken')
-            res.send(401)
-            return
-        }
-        const ip = req.ip
-        const deviceName = req.headers['user-agent']!
-        const accessToken = await jwtService.createJWTAccessToken(user)
-        const refreshToken = await jwtService.createJWTRefreshToken(user,deviceName,ip)
-        res.cookie('refreshToken', refreshToken, {
-            httpOnly: true,
-            secure: true
-        })
-        res.json({'accessToken': accessToken})
+    const user = await authService.checkCredentials(req.body)
+    if (!user) {
+        res.clearCookie('refreshToken')
+        return res.send(401)
+    }
+    const ip = req.ip
+    const deviceName = req.headers['user-agent']!
+    const accessToken = await jwtService.createJWTAccessToken(user)
+    const refreshToken = await jwtService.createJWTRefreshToken(user,deviceName,ip)
+    res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: true
+    })
+    res.json({'accessToken': accessToken})
 
 })
 
 authRouter.post('/refresh-token',
+    checkRefreshTokenMiddleware,
     async(req: Request, res: Response) => {
-    const refreshToken = req.cookies.refreshToken
-    if (!req.cookies.refreshToken) {
-        console.log('!cookie')
-        res.send(401)
-        return
-    }
-    const userId = await jwtService.getUserIdByRefreshToken(refreshToken)
-    if (!userId) {
-        res.clearCookie('refreshToken')
-        console.log('no user id')
-        res.send(401)
-        return
-    }
-    const user = await usersRepository.findUserById(userId)
-    const newAccessToken = await jwtService.createJWTAccessToken(user)
-    const isRefreshTokenActive: boolean = await jwtService.checkRefreshToken(refreshToken)
-    if(!isRefreshTokenActive) {
-        res.send(401)
-        return
-    }
-    const newRefreshToken = await jwtService.updateJWTRefreshToken(refreshToken)
-    res.cookie('refreshToken', newRefreshToken, {
-        httpOnly: true,
-        secure: true
-    })
-    res.json({'accessToken': newAccessToken})
+        const refreshToken = req.cookies.refreshToken
+        const user = await jwtService.getUserByRefreshToken(refreshToken)
+        const newAccessToken = await jwtService.createJWTAccessToken(user)
+        const newRefreshToken = await jwtService.updateJWTRefreshToken(refreshToken)
+        res.cookie('refreshToken', newRefreshToken, {
+            httpOnly: true,
+            secure: true
+        })
+        res.json({'accessToken': newAccessToken})
 
     })
 
 authRouter.post('/logout',
+    checkRefreshTokenMiddleware,
     async(req: Request, res: Response) => {
         const refreshToken = req.cookies.refreshToken
-        if (!req.cookies.refreshToken) {
-            res.send(401)
-            return
-        }
-        const userId = await jwtService.getUserIdByRefreshToken(refreshToken)
-        if (!userId) {
-            res.clearCookie('refreshToken')
-            res.send(401)
-            return
-        }
-        const isRefreshTokenActive: boolean = await jwtService.checkRefreshToken(refreshToken)
-        if(!isRefreshTokenActive) {
-            res.send(401)
-            return
-        }
         await jwtService.deleteSession(refreshToken)
         await devicesService.deleteDevice(refreshToken)
         res.clearCookie('refreshToken')

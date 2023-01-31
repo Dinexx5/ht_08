@@ -40,7 +40,6 @@ const mongoUri = process.env.MONGO_URL;
 if (!mongoUri) {
     throw new Error("No mongo URL");
 }
-console.log("url: ", mongoUri);
 const client = new mongodb_1.MongoClient(mongoUri);
 const db = client.db();
 exports.blogsCollection = db.collection("blogs");

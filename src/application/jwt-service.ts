@@ -1,9 +1,11 @@
-import {refreshTokenModel, userAccountDbModel} from "../models/models";
+import {deviceDbModel, refreshTokenModel, userAccountDbModel} from "../models/models";
 import jwt from 'jsonwebtoken'
 import {ObjectId} from "mongodb";
 import {settings} from "../settings";
 import {jwtRepository} from "../repositories/jwt-repository";
 import {devicesRepository} from "../repositories/devices/devices-repository";
+import {devicesService} from "../domain/devices-service";
+import {usersRepository} from "../repositories/users/users-repository-db";
 
 
 
@@ -18,21 +20,21 @@ export const jwtService = {
 
         const deviceId = new Date().toISOString()
         const refreshToken = jwt.sign({userId: user._id, deviceId: deviceId}, settings.JWT_REFRESH_SECRET, {expiresIn: "20s"})
-        const result = await this.getTokenInfo(refreshToken)
+        const result = await this.getRefreshTokenInfo(refreshToken)
         const issuedAt = new Date(result.iat*1000).toISOString()
-        console.log(result)
+        const expiredAt = new Date(result.exp*1000).toISOString()
 
-        const dbToken: refreshTokenModel = {
+        const tokenMeta: refreshTokenModel = {
             issuedAt: issuedAt,
             userId: user._id,
             deviceId: deviceId,
             deviceName: deviceName,
             ip: ip,
-            expiredAt: new Date(result.exp*1000).toISOString()
+            expiredAt: expiredAt
 
         }
-        await jwtRepository.saveRefreshTokenForUser(dbToken)
-        const newDevice = {
+        await jwtRepository.saveRefreshTokenMeta(tokenMeta)
+        const newDevice: deviceDbModel = {
             _id: new ObjectId(),
             userId: user._id,
             ip: ip,
@@ -41,20 +43,18 @@ export const jwtService = {
             deviceId: deviceId
         }
         await devicesRepository.saveNewDevice(newDevice)
-
         return refreshToken
 
     },
     async updateJWTRefreshToken(refreshToken: string): Promise<string> {
-        const result: any = jwt.verify(refreshToken,settings.JWT_REFRESH_SECRET)
+        const result: any = this.getRefreshTokenInfo(refreshToken)
         const {deviceId, userId, exp} = result
         const newRefreshToken = jwt.sign({userId: userId, deviceId: deviceId}, settings.JWT_REFRESH_SECRET, {expiresIn: "20s"})
-        const newResult: any = await this.getTokenInfo(newRefreshToken)
-        console.log(newResult)
-        const newExpirationDate = new Date(newResult.exp*1000).toISOString()
+        const newResult: any = await this.getRefreshTokenInfo(newRefreshToken)
+        const newExpiredAt = new Date(newResult.exp*1000).toISOString()
         const newIssuedAt = new Date(newResult.iat*1000).toISOString()
-        const expirationDate = new Date(exp*1000).toISOString()
-        const isUpdated = await jwtRepository.updateRefreshTokenForUser(expirationDate, newExpirationDate, newIssuedAt)
+        const expiredAt = new Date(exp*1000).toISOString()
+        const isUpdated = await jwtRepository.updateRefreshTokenForUser(expiredAt, newExpiredAt, newIssuedAt)
         if (!isUpdated){
             console.log('Can not update')
         }
@@ -64,7 +64,7 @@ export const jwtService = {
     },
 
     async deleteSession(token: string): Promise<boolean> {
-        const result: any = await this.getTokenInfo(token)
+        const result: any = await this.getRefreshTokenInfo(token)
         const expirationDate = new Date(result.exp*1000).toISOString()
         return jwtRepository.deleteSession(expirationDate)
 
@@ -79,15 +79,13 @@ export const jwtService = {
         }
     },
 
-    async getUserIdByRefreshToken (token: string) {
-        try {
-            const result: any = jwt.verify(token, settings.JWT_REFRESH_SECRET)
-            return new ObjectId(result.userId)
-        } catch (error) {
-            return null
-        }
+    async getUserByRefreshToken (token: string) {
+        const result: any = jwt.verify(token, settings.JWT_REFRESH_SECRET)
+        const userId = new ObjectId(result.userId)
+        return await usersRepository.findUserById(userId)
     },
-    async getTokenInfo (token: string) {
+
+    async getRefreshTokenInfo (token: string) {
         try {
             const result: any = jwt.verify(token, settings.JWT_REFRESH_SECRET)
             return result
@@ -95,18 +93,15 @@ export const jwtService = {
             return null
         }
     },
-    async checkRefreshToken(refreshToken: string): Promise<boolean> {
-        const result: any = await jwt.verify(refreshToken,settings.JWT_REFRESH_SECRET)
-        const expirationDate = new Date(result.exp*1000).toISOString()
-        const currentDate = new Date().toISOString()
-        const foundToken = await jwtRepository.findRefreshTokenByExpirationDate(expirationDate)
-        if(!foundToken) {
+
+    async checkRefreshTokenInDb(refreshToken: string): Promise<boolean> {
+        try {
+            const result: any = await jwt.verify(refreshToken, settings.JWT_REFRESH_SECRET)
+            const expirationDate = new Date(result.exp * 1000).toISOString()
+            return await jwtRepository.findRefreshTokenByExpirationDate(expirationDate)
+        } catch (error) {
             return false
         }
-        if (expirationDate < currentDate) {
-            return false
-        }
-        return true
     }
 
 }
