@@ -55,7 +55,7 @@ exports.jwtService = {
     },
     updateJWTRefreshToken(refreshToken) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = this.getRefreshTokenInfo(refreshToken);
+            const result = yield this.getRefreshTokenInfo(refreshToken);
             const { deviceId, userId, exp } = result;
             const newRefreshToken = jsonwebtoken_1.default.sign({ userId: userId, deviceId: deviceId }, settings_1.settings.JWT_REFRESH_SECRET, { expiresIn: "20s" });
             const newResult = yield this.getRefreshTokenInfo(newRefreshToken);

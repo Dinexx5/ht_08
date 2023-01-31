@@ -47,7 +47,7 @@ export const jwtService = {
 
     },
     async updateJWTRefreshToken(refreshToken: string): Promise<string> {
-        const result: any = this.getRefreshTokenInfo(refreshToken)
+        const result: any = await this.getRefreshTokenInfo(refreshToken)
         const {deviceId, userId, exp} = result
         const newRefreshToken = jwt.sign({userId: userId, deviceId: deviceId}, settings.JWT_REFRESH_SECRET, {expiresIn: "20s"})
         const newResult: any = await this.getRefreshTokenInfo(newRefreshToken)
