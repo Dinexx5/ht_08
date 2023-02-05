@@ -37,7 +37,6 @@ export const usersRepository = {
     async createUser(newDbUser: userAccountDbModel): Promise<userAccountDbModel> {
         await UserModel.create(newDbUser)
         return newDbUser
-
     },
 
     async findByLoginOrEmail(loginOrEmail: string): Promise<userAccountDbModel | null> {

@@ -17,6 +17,7 @@ import {jwtService} from "../application/jwt-service";
 import {bearerAuthMiddleware, checkRefreshTokenMiddleware} from "../middlewares/auth-middlewares";
 import {authService} from "../domain/auth-service";
 import {
+    limiter,
     loginRequestsLimiter, newPasswordRequestsLimiter, passwordRecoveryRequestsLimiter,
     registrationConfirmationLimiter,
     registrationRequestsLimiter,
@@ -81,7 +82,7 @@ authRouter.post('/registration-confirmation',
 
 
 authRouter.post('/login',
-    loginRequestsLimiter,
+    limiter,
     loginOrEmailValidation,
     passwordAuthValidation,
     inputValidationMiddleware,
@@ -104,7 +105,7 @@ authRouter.post('/login',
 })
 
 authRouter.post('/password-recovery',
-    passwordRecoveryRequestsLimiter,
+    limiter,
     emailValidationForPasswordRecovery,
     inputValidationMiddleware,
     async(req: RequestWithBody<resendEmailModel>, res: Response) => {
@@ -120,7 +121,7 @@ authRouter.post('/password-recovery',
     })
 
 authRouter.post('/new-password',
-    newPasswordRequestsLimiter,
+    limiter,
     newPasswordValidation,
     confirmationCodeValidationForPassword,
     inputValidationMiddleware,

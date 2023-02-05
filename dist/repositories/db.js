@@ -32,7 +32,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.runDb = exports.DeviceModel = exports.TokenModel = exports.CommentModel = exports.UserModel = exports.PostModel = exports.BlogModelClass = void 0;
+exports.runDb = exports.AttemptModelClass = exports.DeviceModel = exports.TokenModel = exports.CommentModel = exports.UserModel = exports.PostModel = exports.BlogModelClass = void 0;
 const dotenv = __importStar(require("dotenv"));
 const mongoose_1 = __importStar(require("mongoose"));
 dotenv.config();
@@ -111,12 +111,18 @@ const deviceSchema = new mongoose_1.default.Schema({
     lastActiveDate: String,
     deviceId: String
 });
+const attemptSchema = new mongoose_1.default.Schema({
+    _id: mongoose_1.Schema.Types.ObjectId,
+    requestData: String,
+    date: String
+});
 exports.BlogModelClass = mongoose_1.default.model('blogs', blogSchema);
 exports.PostModel = mongoose_1.default.model('posts', postSchema);
 exports.UserModel = mongoose_1.default.model('userAccounts', userAccountSchema);
 exports.CommentModel = mongoose_1.default.model('comments', commentSchema);
 exports.TokenModel = mongoose_1.default.model('tokens', tokenSchema);
 exports.DeviceModel = mongoose_1.default.model('devices', deviceSchema);
+exports.AttemptModelClass = mongoose_1.default.model('attempts', attemptSchema);
 function runDb() {
     return __awaiter(this, void 0, void 0, function* () {
         try {

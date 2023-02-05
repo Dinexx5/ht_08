@@ -183,3 +183,8 @@ export type deviceViewModel = {
     lastActiveDate: string
     deviceId: string
 }
+export type attemptDbModel = {
+    _id: object
+    requestData: string
+    date: string
+}

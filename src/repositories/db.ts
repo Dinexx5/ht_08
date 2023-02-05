@@ -1,7 +1,7 @@
 import {MongoClient} from "mongodb";
 import * as dotenv from 'dotenv'
 import {
-    accountData,
+    accountData, attemptDbModel,
     blogDbModel,
     commentDbModel,
     deviceDbModel, emailConfirmation, passwordRecovery,
@@ -99,6 +99,12 @@ const deviceSchema = new mongoose.Schema<deviceDbModel>({
     deviceId: String
 });
 
+const attemptSchema = new mongoose.Schema<attemptDbModel>({
+    _id: Schema.Types.ObjectId,
+    requestData: String,
+    date: String
+});
+
 
 export const BlogModelClass = mongoose.model('blogs', blogSchema);
 export const PostModel = mongoose.model('posts', postSchema);
@@ -106,6 +112,7 @@ export const UserModel = mongoose.model('userAccounts', userAccountSchema);
 export const CommentModel = mongoose.model('comments', commentSchema);
 export const TokenModel = mongoose.model('tokens', tokenSchema);
 export const DeviceModel = mongoose.model('devices', deviceSchema);
+export const AttemptModelClass = mongoose.model('attempts', attemptSchema);
 
 
 export async function runDb() {

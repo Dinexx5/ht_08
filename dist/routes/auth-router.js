@@ -43,7 +43,7 @@ exports.authRouter.post('/registration-confirmation', rate_limit_middleware_1.re
     }
     res.send(204);
 }));
-exports.authRouter.post('/login', rate_limit_middleware_1.loginRequestsLimiter, input_validation_1.loginOrEmailValidation, input_validation_1.passwordAuthValidation, input_validation_1.inputValidationMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.authRouter.post('/login', rate_limit_middleware_1.limiter, input_validation_1.loginOrEmailValidation, input_validation_1.passwordAuthValidation, input_validation_1.inputValidationMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield auth_service_1.authService.checkCredentials(req.body);
     if (!user) {
         res.clearCookie('refreshToken');
@@ -59,7 +59,7 @@ exports.authRouter.post('/login', rate_limit_middleware_1.loginRequestsLimiter, 
     });
     res.json({ 'accessToken': accessToken });
 }));
-exports.authRouter.post('/password-recovery', rate_limit_middleware_1.passwordRecoveryRequestsLimiter, input_validation_1.emailValidationForPasswordRecovery, input_validation_1.inputValidationMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.authRouter.post('/password-recovery', rate_limit_middleware_1.limiter, input_validation_1.emailValidationForPasswordRecovery, input_validation_1.inputValidationMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const isEmailSent = yield auth_service_1.authService.sendEmailForPasswordRecovery(req.body.email);
     if (!isEmailSent) {
         res.status(204).send('error');
@@ -67,7 +67,7 @@ exports.authRouter.post('/password-recovery', rate_limit_middleware_1.passwordRe
     }
     res.sendStatus(204);
 }));
-exports.authRouter.post('/new-password', rate_limit_middleware_1.newPasswordRequestsLimiter, input_validation_1.newPasswordValidation, input_validation_1.confirmationCodeValidationForPassword, input_validation_1.inputValidationMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.authRouter.post('/new-password', rate_limit_middleware_1.limiter, input_validation_1.newPasswordValidation, input_validation_1.confirmationCodeValidationForPassword, input_validation_1.inputValidationMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const isPasswordUpdated = users_service_1.usersService.updatePassword(req.body.newPassword, req.body.recoveryCode);
     if (!isPasswordUpdated) {
         res.send('something went wrong with the password change');
