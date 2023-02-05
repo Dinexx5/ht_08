@@ -23,7 +23,7 @@ exports.commentsRepository = {
                 userLogin: user.accountData.login,
                 postId: postId
             };
-            yield db_1.commentsCollection.insertOne(commentDb);
+            yield db_1.CommentModel.create(commentDb);
             return {
                 id: commentDb._id.toString(),
                 content: commentDb.content,
@@ -36,14 +36,14 @@ exports.commentsRepository = {
     updateComment(id, content) {
         return __awaiter(this, void 0, void 0, function* () {
             let _id = new mongodb_1.ObjectId(id);
-            let result = yield db_1.commentsCollection.updateOne({ _id: _id }, { $set: { content: content } });
+            let result = yield db_1.CommentModel.updateOne({ _id: _id }, { $set: { content: content } });
             return result.matchedCount === 1;
         });
     },
     deleteComment(id) {
         return __awaiter(this, void 0, void 0, function* () {
             let _id = new mongodb_1.ObjectId(id);
-            let result = yield db_1.commentsCollection.deleteOne({ _id: _id });
+            let result = yield db_1.CommentModel.deleteOne({ _id: _id });
             return result.deletedCount === 1;
         });
     }

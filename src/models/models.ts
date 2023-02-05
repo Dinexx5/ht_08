@@ -1,3 +1,4 @@
+
 export type createBlogInputModel = {
     name: string
     description: string
@@ -93,17 +94,26 @@ export type userAccountDbModel = {
     _id: Object
     accountData: accountData
     emailConfirmation: emailConfirmation
+    passwordRecovery: passwordRecovery
 }
-type accountData = {
+export type accountData = {
     login: string
     email: string
     createdAt: string
     passwordHash: string
 }
-type emailConfirmation = {
+export type emailConfirmation = {
     confirmationCode: string
-    expirationDate: any
+    expirationDate: Date
     isConfirmed: boolean
+}
+export type passwordRecovery = {
+    recoveryCode: string | null
+    expirationDate: Date | null
+}
+export type passwordRecoveryModel = {
+    newPassword: string
+    recoveryCode: string
 }
 
 export type resendEmailModel = {
@@ -148,7 +158,8 @@ export type paginationQuerys = {
     searchLoginTerm?: string
     searchEmailTerm?: string
 }
-export type refreshTokenModel = {
+export type refreshTokenDbModel = {
+    _id: Object
     issuedAt: string
     deviceId: string
     deviceName: string
@@ -156,13 +167,7 @@ export type refreshTokenModel = {
     userId: Object
     expiredAt: string
 }
-export type createDeviceInputModel = {
-    user: userAccountDbModel,
-    ip: string,
-    deviceId: string,
-    deviceName: string,
-    issuedAt: string
-}
+
 export type deviceDbModel = {
     _id: object
     userId: object

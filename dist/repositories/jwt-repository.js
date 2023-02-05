@@ -14,18 +14,18 @@ const db_1 = require("./db");
 exports.jwtRepository = {
     saveRefreshTokenMeta(newDbToken) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield db_1.tokenCollection.insertOne(newDbToken);
+            yield db_1.TokenModel.create(newDbToken);
         });
     },
-    updateRefreshTokenForUser(expirationDate, newExpirationDate, newIssuedAt) {
+    updateRefreshToken(expirationDate, newExpirationDate, newIssuedAt) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield db_1.tokenCollection.updateOne({ expiredAt: expirationDate }, { $set: { expiredAt: newExpirationDate, issuedAt: newIssuedAt } });
+            const result = yield db_1.TokenModel.updateOne({ expiredAt: expirationDate }, { $set: { expiredAt: newExpirationDate, issuedAt: newIssuedAt } });
             return result.modifiedCount === 1;
         });
     },
     findToken(refreshToken) {
         return __awaiter(this, void 0, void 0, function* () {
-            const isFound = yield db_1.tokenCollection.findOne({ token: refreshToken });
+            const isFound = yield db_1.TokenModel.findOne({ token: refreshToken });
             if (!isFound) {
                 return false;
             }
@@ -34,13 +34,13 @@ exports.jwtRepository = {
     },
     deleteSession(expirationDate) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield db_1.tokenCollection.deleteOne({ expiredAt: expirationDate });
+            const result = yield db_1.TokenModel.deleteOne({ expiredAt: expirationDate });
             return result.deletedCount === 1;
         });
     },
     findRefreshTokenByExpirationDate(expirationDate) {
         return __awaiter(this, void 0, void 0, function* () {
-            const foundToken = yield db_1.tokenCollection.findOne({ expiredAt: expirationDate });
+            const foundToken = yield db_1.TokenModel.findOne({ expiredAt: expirationDate });
             if (!foundToken) {
                 return false;
             }

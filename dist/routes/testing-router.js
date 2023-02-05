@@ -14,11 +14,11 @@ const express_1 = require("express");
 const db_1 = require("../repositories/db");
 exports.testingRouter = (0, express_1.Router)({});
 exports.testingRouter.delete('/all-data', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    yield db_1.blogsCollection.deleteMany({});
-    yield db_1.postsCollection.deleteMany({});
-    yield db_1.commentsCollection.deleteMany({});
-    yield db_1.userAccountsCollection.deleteMany({});
-    yield db_1.tokenCollection.deleteMany({});
-    yield db_1.devicesCollection.deleteMany({});
-    res.send(204);
+    yield db_1.BlogModelClass.deleteMany({});
+    yield db_1.PostModel.deleteMany({});
+    yield db_1.CommentModel.deleteMany({});
+    yield db_1.UserModel.deleteMany({});
+    yield db_1.TokenModel.deleteMany({});
+    yield db_1.DeviceModel.deleteMany({});
+    return res.sendStatus(204);
 }));

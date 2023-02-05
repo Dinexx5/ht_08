@@ -2,7 +2,7 @@ import {
     commentDbModel, commentViewModel,
     paginationQuerys, paginatedViewModel
 } from "../../models/models";
-import {commentsCollection} from "../db";
+import {CommentModel} from "../db";
 import {ObjectId} from "mongodb";
 
 function mapCommentToCommentViewModel (comment: commentDbModel): commentViewModel {
@@ -24,13 +24,13 @@ export const commentsQueryRepository = {
         const sortDirectionNumber: 1 | -1 = sortDirection === "desc" ? -1 : 1;
         const skippedCommentsNumber = (+pageNumber - 1) * +pageSize
 
-        const countAll = await commentsCollection.countDocuments({postId: postId})
-        let commentsDb = await commentsCollection
+        const countAll = await CommentModel.countDocuments({postId: postId})
+        let commentsDb = await CommentModel
             .find({postId: postId})
             .sort({[sortBy]: sortDirectionNumber})
             .skip(skippedCommentsNumber)
             .limit(+pageSize)
-            .toArray()
+            .lean()
 
         const commentsView = commentsDb.map(mapCommentToCommentViewModel)
         return {
@@ -46,7 +46,7 @@ export const commentsQueryRepository = {
     async findCommentById(commentId: string): Promise<commentViewModel | null> {
 
         let _id = new ObjectId(commentId)
-        let foundComment: commentDbModel | null = await commentsCollection.findOne({_id: _id})
+        let foundComment: commentDbModel | null = await CommentModel.findOne({_id: _id})
         if (!foundComment) {
             return null
         }

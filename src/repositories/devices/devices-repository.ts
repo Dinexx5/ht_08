@@ -1,20 +1,20 @@
-import {devicesCollection} from "../db";
+import {DeviceModel} from "../db";
 import {ObjectId} from "mongodb";
 import {deviceDbModel, deviceViewModel} from "../../models/models";
 
 
 export const devicesRepository = {
     async saveNewDevice(newDevice: deviceDbModel) {
-        await devicesCollection.insertOne(newDevice)
+        await DeviceModel.create(newDevice)
     },
 
     async updateDeviceLastActiveDate(deviceId: string, newIssuedAt: string) {
-        await devicesCollection.updateOne({deviceId: deviceId}, {$set: {lastActiveDate: newIssuedAt}})
+        await DeviceModel.updateOne({deviceId: deviceId}, {$set: {lastActiveDate: newIssuedAt}})
     },
 
     async getActiveSessions(userId: string):Promise<deviceViewModel[]> {
         const _id = new ObjectId(userId)
-        const foundDevices = await devicesCollection.find({userId: _id}).toArray()
+        const foundDevices = await DeviceModel.find({userId: _id}).lean()
         return foundDevices.map(device => ({
             ip: device.ip,
             title: device.title,
@@ -25,7 +25,7 @@ export const devicesRepository = {
 
     async deleteAllSessions(deviceId: string, userId: string): Promise<boolean> {
         const _id = new ObjectId(userId)
-        const result = await devicesCollection.deleteMany( {$and: [{ userId: _id}, {deviceId: { $ne: deviceId }} ]})
+        const result = await DeviceModel.deleteMany( {$and: [{ userId: _id}, {deviceId: { $ne: deviceId }} ]})
         if (result.deletedCount) {
             return true
         }
@@ -33,7 +33,7 @@ export const devicesRepository = {
     },
 
     async findDeviceByDeviceId(deviceId: string): Promise<deviceDbModel | null> {
-        const foundDevice = await devicesCollection.findOne({deviceId: deviceId})
+        const foundDevice = await DeviceModel.findOne({deviceId: deviceId})
         if (!foundDevice) {
             return null
         }
@@ -41,7 +41,7 @@ export const devicesRepository = {
     },
 
     async deleteSessionById(deviceId: string): Promise<boolean> {
-        const result = await devicesCollection.deleteOne({ deviceId: deviceId })
+        const result = await DeviceModel.deleteOne({ deviceId: deviceId })
         return result.deletedCount === 1
     },
 

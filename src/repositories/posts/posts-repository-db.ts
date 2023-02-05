@@ -1,4 +1,4 @@
-import {postsCollection} from "../db";
+import {PostModel} from "../db";
 import {ObjectId} from "mongodb";
 import {blogsQueryRepository} from "../blogs/blogs-query-repository";
 import {
@@ -22,7 +22,7 @@ export const postsRepository = {
             blogName: foundBlog!.name,
             createdAt: foundBlog!.createdAt
         }
-        await postsCollection.insertOne(newDbPost)
+        await PostModel.create(newDbPost)
         return {
             id: newDbPost._id.toString(),
             title: title,
@@ -38,7 +38,7 @@ export const postsRepository = {
     async deletePostById (postId: string): Promise<boolean> {
 
         let _id = new ObjectId(postId)
-        let result = await postsCollection.deleteOne({_id: _id})
+        let result = await PostModel.deleteOne({_id: _id})
         return result.deletedCount === 1
     },
 
@@ -47,7 +47,7 @@ export const postsRepository = {
         const {title, shortDescription, content, blogId} = body
 
         let _id = new ObjectId(id)
-        let result = await postsCollection.updateOne({_id: _id}, {$set: {title: title, shortDescription: shortDescription, content: content, blogId: blogId}})
+        let result = await PostModel.updateOne({_id: _id}, {$set: {title: title, shortDescription: shortDescription, content: content, blogId: blogId}})
         return result.matchedCount === 1
     }
 }

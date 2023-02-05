@@ -33,6 +33,7 @@ exports.jwtService = {
             const issuedAt = new Date(result.iat * 1000).toISOString();
             const expiredAt = new Date(result.exp * 1000).toISOString();
             const tokenMeta = {
+                _id: new mongodb_1.ObjectId(),
                 issuedAt: issuedAt,
                 userId: user._id,
                 deviceId: deviceId,
@@ -62,7 +63,7 @@ exports.jwtService = {
             const newExpiredAt = new Date(newResult.exp * 1000).toISOString();
             const newIssuedAt = new Date(newResult.iat * 1000).toISOString();
             const expiredAt = new Date(exp * 1000).toISOString();
-            const isUpdated = yield jwt_repository_1.jwtRepository.updateRefreshTokenForUser(expiredAt, newExpiredAt, newIssuedAt);
+            const isUpdated = yield jwt_repository_1.jwtRepository.updateRefreshToken(expiredAt, newExpiredAt, newIssuedAt);
             if (!isUpdated) {
                 console.log('Can not update');
             }

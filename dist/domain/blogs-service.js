@@ -11,20 +11,38 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.blogsService = void 0;
 const blogs_db_repository_1 = require("../repositories/blogs/blogs-db-repository");
+const mongodb_1 = require("mongodb");
 exports.blogsService = {
     createBlog(blogBody) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield blogs_db_repository_1.blogsRepository.createBlog(blogBody);
+            const { name, description, websiteUrl } = blogBody;
+            const newDbBlog = {
+                _id: new mongodb_1.ObjectId(),
+                name: name,
+                description: description,
+                websiteUrl: websiteUrl,
+                createdAt: new Date().toISOString()
+            };
+            const blog = yield blogs_db_repository_1.blogsRepository.createBlog(newDbBlog);
+            return {
+                name: blog.name,
+                description: blog.description,
+                websiteUrl: blog.websiteUrl,
+                createdAt: blog.createdAt,
+                id: blog._id.toString()
+            };
         });
     },
     deleteBlogById(blogId) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield blogs_db_repository_1.blogsRepository.deleteBlogById(blogId);
+            let _id = new mongodb_1.ObjectId(blogId);
+            return yield blogs_db_repository_1.blogsRepository.deleteBlogById(_id);
         });
     },
     UpdateBlogById(blogId, blogBody) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield blogs_db_repository_1.blogsRepository.UpdateBlogById(blogId, blogBody);
+            let _id = new mongodb_1.ObjectId(blogId);
+            return yield blogs_db_repository_1.blogsRepository.UpdateBlogById(_id, blogBody);
         });
     }
 };

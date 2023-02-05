@@ -16,5 +16,10 @@ exports.emailService = {
         return __awaiter(this, void 0, void 0, function* () {
             return yield email_adapter_1.emailAdapter.sendEmailForConfirmation(email, code);
         });
+    },
+    sendEmailForPasswordRecovery(email, code) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield email_adapter_1.emailAdapter.sendEmailForPasswordRecovery(email, code);
+        });
     }
 };

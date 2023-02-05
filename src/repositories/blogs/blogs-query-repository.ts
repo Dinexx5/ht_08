@@ -1,4 +1,4 @@
-import {blogsCollection} from "../db";
+import {BlogModelClass} from "../db";
 import {ObjectId} from "mongodb";
 import {
     blogDbModel,
@@ -26,33 +26,18 @@ export const blogsQueryRepository = {
         const sortDirectionInt: 1 | -1 = sortDirection === "desc" ? -1 : 1;
         const skippedBlogsCount = (+pageNumber-1)*+pageSize
 
-        if (searchNameTerm){
-            const countAllWithSearchTerm = await blogsCollection.countDocuments({name: {$regex: searchNameTerm, $options: 'i' } })
-            const blogsDb: blogDbModel[] = await blogsCollection
-                .find( {name: {$regex: searchNameTerm, $options: 'i' } }  )
-                .sort( {[sortBy]: sortDirectionInt} )
-                .skip(skippedBlogsCount)
-                .limit(+pageSize)
-                .toArray()
-
-            const blogsView = blogsDb.map(mapFoundBlogToBlogViewModel)
-            return {
-                pagesCount: Math.ceil(countAllWithSearchTerm/+pageSize),
-                page: +pageNumber,
-                pageSize: +pageSize,
-                totalCount: countAllWithSearchTerm,
-                items: blogsView
-            }
-
+        const filter = {} as {name?: {$regex: string, $options: string}}
+        if (searchNameTerm) {
+            filter.name = {$regex: searchNameTerm, $options: 'i' }
         }
 
-        const countAll = await blogsCollection.countDocuments()
-        let blogsDb = await blogsCollection
-            .find( { } )
+        const countAll = await BlogModelClass.countDocuments(filter)
+        let blogsDb = await BlogModelClass
+            .find( filter )
             .sort( {[sortBy]: sortDirectionInt} )
             .skip(skippedBlogsCount)
             .limit(+pageSize)
-            .toArray()
+            .lean()
 
         const blogsView = blogsDb.map(mapFoundBlogToBlogViewModel)
         return {
@@ -63,13 +48,12 @@ export const blogsQueryRepository = {
             items: blogsView
         }
 
-
     },
 
     async findBlogById(blogId: string): Promise<blogViewModel | null> {
 
         let _id = new ObjectId(blogId)
-        let foundBlog: blogDbModel | null = await blogsCollection.findOne({_id: _id})
+        let foundBlog: blogDbModel | null = await BlogModelClass.findOne({_id: _id}).lean()
         if (!foundBlog) {
             return null
         }

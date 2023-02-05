@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.passwordAuthValidation = exports.loginOrEmailValidation = exports.confirmationCodeValidation = exports.emailValidationForResending = exports.emailValidation = exports.passwordValidation = exports.loginValidation = exports.commentContentValidation = exports.blogIdlValidation = exports.postContentValidation = exports.shortDescriptionValidation = exports.titleValidation = exports.websiteUrlValidation = exports.descriptionValidation = exports.nameValidation = exports.objectIdIsValidMiddleware = exports.inputValidationMiddleware = void 0;
+exports.passwordAuthValidation = exports.loginOrEmailValidation = exports.newPasswordValidation = exports.confirmationCodeValidationForPassword = exports.confirmationCodeValidation = exports.emailValidationForPasswordRecovery = exports.emailValidationForResending = exports.emailValidation = exports.passwordValidation = exports.loginValidation = exports.commentContentValidation = exports.blogIdlValidation = exports.postContentValidation = exports.shortDescriptionValidation = exports.titleValidation = exports.websiteUrlValidation = exports.descriptionValidation = exports.nameValidation = exports.objectIdIsValidMiddleware = exports.inputValidationMiddleware = void 0;
 const express_validator_1 = require("express-validator");
 const blogs_query_repository_1 = require("../repositories/blogs/blogs-query-repository");
 const mongodb_1 = require("mongodb");
@@ -89,6 +89,8 @@ exports.emailValidationForResending = (0, express_validator_1.body)('email').tri
     }
     return true;
 }));
+//password-recovery
+exports.emailValidationForPasswordRecovery = (0, express_validator_1.body)('email').trim().isEmail().withMessage('Not an email');
 //confirmation code validation
 exports.confirmationCodeValidation = (0, express_validator_1.body)('code').trim().not().isEmpty().withMessage('Not a string')
     .custom((code) => __awaiter(void 0, void 0, void 0, function* () {
@@ -107,6 +109,24 @@ exports.confirmationCodeValidation = (0, express_validator_1.body)('code').trim(
     }
     return true;
 }));
+exports.confirmationCodeValidationForPassword = (0, express_validator_1.body)('recoveryCode').trim().not().isEmpty().withMessage('Not a string')
+    .custom((code) => __awaiter(void 0, void 0, void 0, function* () {
+    let user = yield users_repository_db_1.usersRepository.findUserByRecoveryCode(code);
+    if (!user) {
+        throw new Error('incorrect code');
+    }
+    if (user.passwordRecovery.recoveryCode !== code) {
+        throw new Error('incorrect recovery code');
+    }
+    if (!user.passwordRecovery.expirationDate) {
+        throw new Error('no confirmation code in user object');
+    }
+    if (user.passwordRecovery.expirationDate < new Date()) {
+        throw new Error('confirmation code expired');
+    }
+    return true;
+}));
+exports.newPasswordValidation = (0, express_validator_1.body)('newPassword').trim().isLength({ min: 6, max: 20 }).withMessage('Incorrect length').not().isEmpty().withMessage('Not a string');
 //login
 exports.loginOrEmailValidation = (0, express_validator_1.body)('loginOrEmail').trim().not().isEmpty().withMessage('Not a string');
 exports.passwordAuthValidation = (0, express_validator_1.body)('password').trim().not().isEmpty().withMessage('Not a string');

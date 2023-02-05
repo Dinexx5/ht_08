@@ -23,8 +23,7 @@ exports.usersService = {
     createUser(body) {
         return __awaiter(this, void 0, void 0, function* () {
             const { login, email, password } = body;
-            const passwordSalt = yield bcrypt_1.default.genSalt(10);
-            const passwordHash = yield bcrypt_1.default.hash(password, passwordSalt);
+            const passwordHash = yield this.generateHash(password);
             const newDbAccount = {
                 _id: new mongodb_1.ObjectId(),
                 accountData: {
@@ -39,6 +38,10 @@ exports.usersService = {
                         hours: 1
                     }),
                     isConfirmed: true
+                },
+                passwordRecovery: {
+                    recoveryCode: null,
+                    expirationDate: null
                 }
             };
             return yield users_repository_db_1.usersRepository.createUserByAdmin(newDbAccount);
@@ -49,4 +52,28 @@ exports.usersService = {
             return yield users_repository_db_1.usersRepository.deleteUserById(userId);
         });
     },
+    generateHash(password) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const passwordSalt = yield bcrypt_1.default.genSalt(10);
+            return yield bcrypt_1.default.hash(password, passwordSalt);
+        });
+    },
+    // req.user in bearerAuthMiddleware
+    findUserById(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield users_repository_db_1.usersRepository.findUserById(userId);
+        });
+    },
+    updateConfirmationCode(user, confirmationCode) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield users_repository_db_1.usersRepository.updatePasswordCode(user, confirmationCode);
+        });
+    },
+    updatePassword(newPassword, recoveryCode) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield users_repository_db_1.usersRepository.findUserByRecoveryCode(recoveryCode);
+            const newPasswordHash = yield this.generateHash(newPassword);
+            return yield users_repository_db_1.usersRepository.updatePassword(user, newPasswordHash);
+        });
+    }
 };

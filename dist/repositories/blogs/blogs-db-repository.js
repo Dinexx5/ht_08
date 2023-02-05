@@ -11,47 +11,36 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.blogsRepository = void 0;
 const db_1 = require("../db");
-const mongodb_1 = require("mongodb");
 exports.blogsRepository = {
-    createBlog(blogBody) {
+    createBlog(newDbBlog) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { name, description, websiteUrl } = blogBody;
-            const newDbBlog = {
-                _id: new mongodb_1.ObjectId(),
-                name: name,
-                description: description,
-                websiteUrl: websiteUrl,
-                createdAt: new Date().toISOString()
-            };
-            yield db_1.blogsCollection.insertOne(newDbBlog);
-            return {
-                name: newDbBlog.name,
-                description: newDbBlog.description,
-                websiteUrl: newDbBlog.websiteUrl,
-                createdAt: newDbBlog.createdAt,
-                id: newDbBlog._id.toString()
-            };
+            const blogInstance = new db_1.BlogModelClass(newDbBlog);
+            yield blogInstance.save();
+            return newDbBlog;
         });
     },
-    deleteBlogById(blogId) {
+    deleteBlogById(_id) {
         return __awaiter(this, void 0, void 0, function* () {
-            let _id = new mongodb_1.ObjectId(blogId);
-            let result = yield db_1.blogsCollection.deleteOne({ _id: _id });
-            return result.deletedCount === 1;
+            const blogInstance = yield db_1.BlogModelClass.findOne({ _id: _id });
+            if (!blogInstance) {
+                return false;
+            }
+            yield blogInstance.deleteOne();
+            return true;
         });
     },
-    UpdateBlogById(blogId, body) {
+    UpdateBlogById(_id, body) {
         return __awaiter(this, void 0, void 0, function* () {
             const { name, description, websiteUrl } = body;
-            let _id = new mongodb_1.ObjectId(blogId);
-            let result = yield db_1.blogsCollection.updateOne({ _id: _id }, {
-                $set: {
-                    name: name,
-                    description: description,
-                    websiteUrl: websiteUrl
-                }
-            });
-            return result.matchedCount === 1;
+            const blogInstance = yield db_1.BlogModelClass.findOne({ _id: _id });
+            if (!blogInstance) {
+                return false;
+            }
+            blogInstance.name = name;
+            blogInstance.description = description;
+            blogInstance.websiteUrl = websiteUrl;
+            yield blogInstance.save();
+            return true;
         });
     }
 };

@@ -19,13 +19,13 @@ const mongodb_1 = require("mongodb");
 const uuid_1 = require("uuid");
 const add_1 = __importDefault(require("date-fns/add"));
 const email_service_1 = require("./email-service");
+const users_service_1 = require("./users-service");
 exports.authService = {
     //registration
     createUser(body) {
         return __awaiter(this, void 0, void 0, function* () {
             const { login, email, password } = body;
-            const passwordSalt = yield bcrypt_1.default.genSalt(10);
-            const passwordHash = yield bcrypt_1.default.hash(password, passwordSalt);
+            const passwordHash = yield users_service_1.usersService.generateHash(password);
             const newDbAccount = {
                 _id: new mongodb_1.ObjectId(),
                 accountData: {
@@ -40,6 +40,10 @@ exports.authService = {
                         hours: 1
                     }),
                     isConfirmed: false
+                },
+                passwordRecovery: {
+                    recoveryCode: null,
+                    expirationDate: null
                 }
             };
             const createdAccount = yield users_repository_db_1.usersRepository.createUser(newDbAccount);
@@ -55,12 +59,6 @@ exports.authService = {
             return createdAccount;
         });
     },
-    // req.user in bearerAuthMiddleware
-    findUserById(userId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield users_repository_db_1.usersRepository.findUserById(userId);
-        });
-    },
     resendEmail(email) {
         return __awaiter(this, void 0, void 0, function* () {
             const user = yield users_repository_db_1.usersRepository.findByLoginOrEmail(email);
@@ -68,6 +66,23 @@ exports.authService = {
             yield users_repository_db_1.usersRepository.updateCode(user._id, confirmationCode);
             try {
                 yield email_service_1.emailService.sendEmailForConfirmation(email, confirmationCode);
+            }
+            catch (error) {
+                console.error(error);
+                return false;
+            }
+            return true;
+        });
+    },
+    sendEmailForPasswordRecovery(email) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield users_repository_db_1.usersRepository.findByLoginOrEmail(email);
+            if (!user)
+                return false;
+            const confirmationCode = (0, uuid_1.v4)();
+            yield users_service_1.usersService.updateConfirmationCode(user, confirmationCode);
+            try {
+                yield email_service_1.emailService.sendEmailForPasswordRecovery(email, confirmationCode);
             }
             catch (error) {
                 console.error(error);

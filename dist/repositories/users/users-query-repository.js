@@ -25,64 +25,23 @@ exports.usersQueryRepository = {
             const { sortDirection = "desc", sortBy = "createdAt", pageNumber = 1, pageSize = 10, searchLoginTerm = null, searchEmailTerm = null } = query;
             const sortDirectionInt = sortDirection === "desc" ? -1 : 1;
             const skippedUsersCount = (+pageNumber - 1) * +pageSize;
+            const filter = {};
             if (searchLoginTerm && !searchEmailTerm) {
-                const countAllWithSearchLoginTerm = yield db_1.userAccountsCollection.countDocuments({ 'accountData.login': { $regex: searchLoginTerm, $options: 'i' } });
-                const usersDb = yield db_1.userAccountsCollection
-                    .find({ 'accountData.login': { $regex: searchLoginTerm, $options: 'i' } })
-                    .sort({ [sortBy]: sortDirectionInt })
-                    .skip(skippedUsersCount)
-                    .limit(+pageSize)
-                    .toArray();
-                const usersView = usersDb.map(mapDbUserToUserViewModel);
-                return {
-                    pagesCount: Math.ceil(countAllWithSearchLoginTerm / +pageSize),
-                    page: +pageNumber,
-                    pageSize: +pageSize,
-                    totalCount: countAllWithSearchLoginTerm,
-                    items: usersView
-                };
+                filter['accountData.login'] = { $regex: searchLoginTerm, $options: 'i' };
             }
             if (searchEmailTerm && !searchLoginTerm) {
-                const countAllWithSearchEmailTerm = yield db_1.userAccountsCollection.countDocuments({ 'accountData.email': { $regex: searchEmailTerm, $options: 'i' } });
-                const usersDb = yield db_1.userAccountsCollection
-                    .find({ 'accountData.email': { $regex: searchEmailTerm, $options: 'i' } })
-                    .sort({ [sortBy]: sortDirectionInt })
-                    .skip(skippedUsersCount)
-                    .limit(+pageSize)
-                    .toArray();
-                const usersView = usersDb.map(mapDbUserToUserViewModel);
-                return {
-                    pagesCount: Math.ceil(countAllWithSearchEmailTerm / +pageSize),
-                    page: +pageNumber,
-                    pageSize: +pageSize,
-                    totalCount: countAllWithSearchEmailTerm,
-                    items: usersView
-                };
+                filter['accountData.email'] = { $regex: searchEmailTerm, $options: 'i' };
             }
             if (searchLoginTerm && searchEmailTerm) {
-                const countAllWithBothTerms = yield db_1.userAccountsCollection.countDocuments({ $or: [{ 'accountData.email': { $regex: searchEmailTerm, $options: 'i' } }, { 'accountData.login': { $regex: searchLoginTerm, $options: 'i' } }] });
-                const usersDb = yield db_1.userAccountsCollection
-                    .find({ $or: [{ 'accountData.email': { $regex: searchEmailTerm, $options: 'i' } }, { 'accountData.login': { $regex: searchLoginTerm, $options: 'i' } }] })
-                    .sort({ [sortBy]: sortDirectionInt })
-                    .skip(skippedUsersCount)
-                    .limit(+pageSize)
-                    .toArray();
-                const usersView = usersDb.map(mapDbUserToUserViewModel);
-                return {
-                    pagesCount: Math.ceil(countAllWithBothTerms / +pageSize),
-                    page: +pageNumber,
-                    pageSize: +pageSize,
-                    totalCount: countAllWithBothTerms,
-                    items: usersView
-                };
+                filter.$or = [{ 'accountData.email': { $regex: searchEmailTerm, $options: 'i' } }, { 'accountData.login': { $regex: searchLoginTerm, $options: 'i' } }];
             }
-            const countAll = yield db_1.userAccountsCollection.countDocuments();
-            const usersDb = yield db_1.userAccountsCollection
-                .find({})
+            const countAll = yield db_1.UserModel.countDocuments(filter);
+            const usersDb = yield db_1.UserModel
+                .find(filter)
                 .sort({ [sortBy]: sortDirectionInt })
                 .skip(skippedUsersCount)
                 .limit(+pageSize)
-                .toArray();
+                .lean();
             const usersView = usersDb.map(mapDbUserToUserViewModel);
             return {
                 pagesCount: Math.ceil(countAll / +pageSize),

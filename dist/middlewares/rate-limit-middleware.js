@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.loginRequestsLimiter = exports.registrationConfirmationLimiter = exports.registrationResendingLimiter = exports.registrationRequestsLimiter = void 0;
+exports.newPasswordRequestsLimiter = exports.passwordRecoveryRequestsLimiter = exports.loginRequestsLimiter = exports.registrationConfirmationLimiter = exports.registrationResendingLimiter = exports.registrationRequestsLimiter = void 0;
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const limiterOptions = {
     windowMs: 10 * 1000,
@@ -14,3 +14,5 @@ exports.registrationRequestsLimiter = (0, express_rate_limit_1.default)(limiterO
 exports.registrationResendingLimiter = (0, express_rate_limit_1.default)(limiterOptions);
 exports.registrationConfirmationLimiter = (0, express_rate_limit_1.default)(limiterOptions);
 exports.loginRequestsLimiter = (0, express_rate_limit_1.default)(limiterOptions);
+exports.passwordRecoveryRequestsLimiter = (0, express_rate_limit_1.default)(limiterOptions);
+exports.newPasswordRequestsLimiter = (0, express_rate_limit_1.default)(limiterOptions);

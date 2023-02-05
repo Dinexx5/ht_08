@@ -29,13 +29,13 @@ exports.postsQueryRepository = {
             const { sortDirection = "desc", sortBy = "createdAt", pageNumber = 1, pageSize = 10 } = query;
             const sortDirectionNumber = sortDirection === "desc" ? -1 : 1;
             const skippedBlogsNumber = (+pageNumber - 1) * +pageSize;
-            const countAll = yield db_1.postsCollection.countDocuments();
-            let postsDb = yield db_1.postsCollection
+            const countAll = yield db_1.PostModel.countDocuments();
+            let postsDb = yield db_1.PostModel
                 .find({})
                 .sort({ [sortBy]: sortDirectionNumber })
                 .skip(skippedBlogsNumber)
                 .limit(+pageSize)
-                .toArray();
+                .lean();
             const postsView = postsDb.map(postsMapperToPostType);
             return {
                 pagesCount: Math.ceil(countAll / +pageSize),
@@ -51,13 +51,13 @@ exports.postsQueryRepository = {
             const { sortDirection = "desc", sortBy = "createdAt", pageNumber = 1, pageSize = 10 } = query;
             const sortDirectionNumber = sortDirection === "desc" ? -1 : 1;
             const skippedPostsNumber = (+pageNumber - 1) * +pageSize;
-            const countAll = yield db_1.postsCollection.countDocuments({ blogId: { $regex: blogId } });
-            let postsDb = yield db_1.postsCollection
+            const countAll = yield db_1.PostModel.countDocuments({ blogId: { $regex: blogId } });
+            let postsDb = yield db_1.PostModel
                 .find({ blogId: { $regex: blogId } })
                 .sort({ [sortBy]: sortDirectionNumber, title: sortDirectionNumber, id: sortDirectionNumber })
                 .skip(skippedPostsNumber)
                 .limit(+pageSize)
-                .toArray();
+                .lean();
             const postsView = postsDb.map(postsMapperToPostType);
             return {
                 pagesCount: Math.ceil(countAll / +pageSize),
@@ -71,7 +71,7 @@ exports.postsQueryRepository = {
     findPostById(postId) {
         return __awaiter(this, void 0, void 0, function* () {
             let _id = new mongodb_1.ObjectId(postId);
-            let foundPost = yield db_1.postsCollection.findOne({ _id: _id });
+            let foundPost = yield db_1.PostModel.findOne({ _id: _id });
             if (!foundPost) {
                 return null;
             }

@@ -5,6 +5,7 @@ import {ObjectId} from "mongodb";
 import {v4 as uuidv4} from 'uuid'
 import add from 'date-fns/add'
 import {emailService} from "./email-service";
+import {usersService} from "./users-service";
 
 export const authService = {
 
@@ -12,8 +13,7 @@ export const authService = {
 
     async createUser(body: createUserInputModel): Promise<userAccountDbModel | null> {
         const {login , email, password} = body
-        const passwordSalt = await bcrypt.genSalt(10)
-        const passwordHash = await bcrypt.hash(password, passwordSalt)
+        const passwordHash = await usersService.generateHash(password)
         const newDbAccount: userAccountDbModel = {
             _id: new ObjectId(),
             accountData: {
@@ -28,6 +28,10 @@ export const authService = {
                     hours: 1
                 }),
                 isConfirmed: false
+            },
+            passwordRecovery: {
+                recoveryCode: null,
+                expirationDate: null
             }
         }
         const createdAccount = await usersRepository.createUser(newDbAccount)
@@ -42,12 +46,6 @@ export const authService = {
         return createdAccount
     },
 
-    // req.user in bearerAuthMiddleware
-
-    async findUserById(userId: Object): Promise<userAccountDbModel> {
-        return await usersRepository.findUserById(userId)
-
-    },
 
     async resendEmail(email:string): Promise<boolean> {
         const user: userAccountDbModel | null = await usersRepository.findByLoginOrEmail(email)
@@ -55,6 +53,20 @@ export const authService = {
         await usersRepository.updateCode(user!._id, confirmationCode)
         try {
             await emailService.sendEmailForConfirmation(email, confirmationCode)
+        } catch(error) {
+            console.error(error)
+            return false
+        }
+        return true
+    },
+
+    async sendEmailForPasswordRecovery(email:string): Promise<boolean> {
+        const user: userAccountDbModel | null = await usersRepository.findByLoginOrEmail(email)
+        if (!user) return false
+        const confirmationCode = uuidv4()
+        await usersService.updateConfirmationCode(user, confirmationCode)
+        try {
+            await emailService.sendEmailForPasswordRecovery(email, confirmationCode)
         } catch(error) {
             console.error(error)
             return false

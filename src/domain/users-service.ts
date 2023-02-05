@@ -9,8 +9,7 @@ export const usersService = {
 //by superAdmin
     async createUser(body: createUserInputModel): Promise<userViewModel> {
         const {login , email, password} = body
-        const passwordSalt = await bcrypt.genSalt(10)
-        const passwordHash = await bcrypt.hash(password, passwordSalt)
+        const passwordHash = await this.generateHash(password)
         const newDbAccount: userAccountDbModel = {
             _id: new ObjectId(),
             accountData: {
@@ -25,6 +24,10 @@ export const usersService = {
                     hours: 1
                 }),
                 isConfirmed: true
+            },
+            passwordRecovery: {
+                recoveryCode: null,
+                expirationDate: null
             }
         }
         return await usersRepository.createUserByAdmin(newDbAccount)
@@ -33,8 +36,28 @@ export const usersService = {
 
     async deleteUserById(userId:string): Promise<boolean> {
         return await usersRepository.deleteUserById(userId)
-
     },
+
+    async generateHash (password: string) {
+        const passwordSalt = await bcrypt.genSalt(10)
+        return await bcrypt.hash(password, passwordSalt)
+    },
+
+    // req.user in bearerAuthMiddleware
+
+    async findUserById(userId: Object): Promise<userAccountDbModel> {
+        return await usersRepository.findUserById(userId)
+    },
+
+    async updateConfirmationCode(user: userAccountDbModel, confirmationCode: string): Promise<boolean> {
+        return await usersRepository.updatePasswordCode(user, confirmationCode)
+    },
+
+    async updatePassword(newPassword: string, recoveryCode: string): Promise<boolean> {
+        const user = await usersRepository.findUserByRecoveryCode(recoveryCode)
+        const newPasswordHash = await this.generateHash(newPassword)
+        return await usersRepository.updatePassword(user!, newPasswordHash)
+    }
 
 
 

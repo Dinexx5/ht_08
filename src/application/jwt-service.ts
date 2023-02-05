@@ -1,4 +1,4 @@
-import {deviceDbModel, refreshTokenModel, userAccountDbModel} from "../models/models";
+import {deviceDbModel, refreshTokenDbModel, userAccountDbModel} from "../models/models";
 import jwt from 'jsonwebtoken'
 import {ObjectId} from "mongodb";
 import {settings} from "../settings";
@@ -24,7 +24,8 @@ export const jwtService = {
         const issuedAt = new Date(result.iat*1000).toISOString()
         const expiredAt = new Date(result.exp*1000).toISOString()
 
-        const tokenMeta: refreshTokenModel = {
+        const tokenMeta: refreshTokenDbModel = {
+            _id: new ObjectId(),
             issuedAt: issuedAt,
             userId: user._id,
             deviceId: deviceId,
@@ -54,7 +55,7 @@ export const jwtService = {
         const newExpiredAt = new Date(newResult.exp*1000).toISOString()
         const newIssuedAt = new Date(newResult.iat*1000).toISOString()
         const expiredAt = new Date(exp*1000).toISOString()
-        const isUpdated = await jwtRepository.updateRefreshTokenForUser(expiredAt, newExpiredAt, newIssuedAt)
+        const isUpdated = await jwtRepository.updateRefreshToken(expiredAt, newExpiredAt, newIssuedAt)
         if (!isUpdated){
             console.log('Can not update')
         }

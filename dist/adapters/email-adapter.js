@@ -14,18 +14,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.emailAdapter = void 0;
 const nodemailer_1 = __importDefault(require("nodemailer"));
+const transporterSettings = {
+    host: "smtp.mail.ru",
+    port: 587,
+    secure: false,
+    auth: {
+        user: 'd.diubajlo@mail.ru',
+        pass: process.env.MAIL_PASS
+    },
+};
 exports.emailAdapter = {
     sendEmailForConfirmation(email, code) {
         return __awaiter(this, void 0, void 0, function* () {
-            let transporter = nodemailer_1.default.createTransport({
-                host: "smtp.mail.ru",
-                port: 587,
-                secure: false,
-                auth: {
-                    user: 'd.diubajlo@mail.ru',
-                    pass: process.env.MAIL_PASS
-                },
-            });
+            let transporter = nodemailer_1.default.createTransport(transporterSettings);
             return yield transporter.sendMail({
                 from: 'd.diubajlo@mail.ru',
                 to: email,
@@ -36,5 +37,19 @@ exports.emailAdapter = {
                     "      </p>",
             });
         });
-    }
+    },
+    sendEmailForPasswordRecovery(email, code) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let transporter = nodemailer_1.default.createTransport(transporterSettings);
+            return yield transporter.sendMail({
+                from: 'd.diubajlo@mail.ru',
+                to: email,
+                subject: "Password recovery",
+                html: "<h1>Password recovery</h1>\n" +
+                    "       <p>To finish password recovery please follow the link below:\n" +
+                    `          <a href='https://somesite.com/password-recovery?recoveryCode=${code}'>recovery password</a>\n` +
+                    "      </p>",
+            });
+        });
+    },
 };

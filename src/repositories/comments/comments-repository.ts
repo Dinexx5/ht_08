@@ -1,4 +1,4 @@
-import {commentsCollection} from "../db";
+import {CommentModel} from "../db";
 import {
     commentDbModel,
     commentViewModel, userAccountDbModel,
@@ -18,7 +18,7 @@ export const commentsRepository = {
             userLogin: user.accountData.login,
             postId: postId
         }
-        await commentsCollection.insertOne(commentDb)
+        await CommentModel.create(commentDb)
         return {
             id: commentDb._id.toString(),
             content: commentDb.content,
@@ -30,13 +30,13 @@ export const commentsRepository = {
 
     async updateComment (id: string, content: string): Promise<boolean> {
         let _id = new ObjectId(id)
-        let result = await commentsCollection.updateOne({_id: _id}, {$set: {content: content}})
+        let result = await CommentModel.updateOne({_id: _id}, {$set: {content: content}})
         return result.matchedCount === 1
     },
 
     async deleteComment (id: string): Promise<boolean> {
         let _id = new ObjectId(id)
-        let result = await commentsCollection.deleteOne({_id: _id})
+        let result = await CommentModel.deleteOne({_id: _id})
         return result.deletedCount === 1
     }
 

@@ -1,4 +1,4 @@
-import {postsCollection} from "../db";
+import {PostModel} from "../db";
 import {ObjectId} from "mongodb";
 import {
     paginationQuerys,
@@ -27,14 +27,14 @@ export const postsQueryRepository = {
 
         const sortDirectionNumber: 1 | -1 = sortDirection === "desc" ? -1 : 1;
         const skippedBlogsNumber = (+pageNumber-1)*+pageSize
-        const countAll = await postsCollection.countDocuments()
+        const countAll = await PostModel.countDocuments()
 
-        let postsDb = await postsCollection
+        let postsDb = await PostModel
             .find({})
             .sort( {[sortBy]: sortDirectionNumber} )
             .skip(skippedBlogsNumber)
             .limit(+pageSize)
-            .toArray()
+            .lean()
         const postsView = postsDb.map(postsMapperToPostType)
         return {
             pagesCount: Math.ceil(countAll/+pageSize),
@@ -50,14 +50,14 @@ export const postsQueryRepository = {
 
         const sortDirectionNumber: 1 | -1 = sortDirection === "desc" ? -1 : 1;
         const skippedPostsNumber = (+pageNumber-1)*+pageSize
-        const countAll = await postsCollection.countDocuments({blogId: {$regex: blogId} })
+        const countAll = await PostModel.countDocuments({blogId: {$regex: blogId} })
 
-        let postsDb = await postsCollection
+        let postsDb = await PostModel
             .find({blogId: {$regex: blogId} })
             .sort( {[sortBy]: sortDirectionNumber, title: sortDirectionNumber, id: sortDirectionNumber} )
             .skip(skippedPostsNumber)
             .limit(+pageSize)
-            .toArray()
+            .lean()
 
         const postsView = postsDb.map(postsMapperToPostType)
         return {
@@ -72,7 +72,7 @@ export const postsQueryRepository = {
     async findPostById (postId: string): Promise<postViewModel | null> {
 
         let _id = new ObjectId(postId)
-        let foundPost: postDbModel | null = await postsCollection.findOne({_id: _id})
+        let foundPost: postDbModel | null = await PostModel.findOne({_id: _id})
         if (!foundPost) {
             return null
         }

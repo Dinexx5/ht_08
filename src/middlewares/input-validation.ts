@@ -90,6 +90,8 @@ export const emailValidationForResending = body('email').trim().isEmail().withMe
         }
         return true
     })
+//password-recovery
+export const emailValidationForPasswordRecovery = body('email').trim().isEmail().withMessage('Not an email')
 
 //confirmation code validation
 export const confirmationCodeValidation = body('code').trim().not().isEmpty().withMessage('Not a string')
@@ -110,7 +112,25 @@ export const confirmationCodeValidation = body('code').trim().not().isEmpty().wi
         return true
     })
 
+export const confirmationCodeValidationForPassword = body('recoveryCode').trim().not().isEmpty().withMessage('Not a string')
+    .custom(async (code) => {
+        let user = await usersRepository.findUserByRecoveryCode(code)
+        if (!user) {
+            throw new Error('incorrect code');
+        }
+        if (user.passwordRecovery.recoveryCode !== code) {
+            throw new Error('incorrect recovery code');
+        }
+        if (!user.passwordRecovery.expirationDate) {
+            throw new Error('no confirmation code in user object');
+        }
+        if (user.passwordRecovery.expirationDate < new Date()) {
+            throw new Error('confirmation code expired');
+        }
+        return true
+    })
 
+export const newPasswordValidation = body('newPassword').trim().isLength({min: 6, max: 20}).withMessage('Incorrect length').not().isEmpty().withMessage('Not a string')
 //login
 
 export const loginOrEmailValidation = body('loginOrEmail').trim().not().isEmpty().withMessage('Not a string')

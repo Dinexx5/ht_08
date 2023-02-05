@@ -27,13 +27,13 @@ exports.commentsQueryRepository = {
             const { sortDirection = "desc", sortBy = "createdAt", pageNumber = 1, pageSize = 10 } = query;
             const sortDirectionNumber = sortDirection === "desc" ? -1 : 1;
             const skippedCommentsNumber = (+pageNumber - 1) * +pageSize;
-            const countAll = yield db_1.commentsCollection.countDocuments({ postId: postId });
-            let commentsDb = yield db_1.commentsCollection
+            const countAll = yield db_1.CommentModel.countDocuments({ postId: postId });
+            let commentsDb = yield db_1.CommentModel
                 .find({ postId: postId })
                 .sort({ [sortBy]: sortDirectionNumber })
                 .skip(skippedCommentsNumber)
                 .limit(+pageSize)
-                .toArray();
+                .lean();
             const commentsView = commentsDb.map(mapCommentToCommentViewModel);
             return {
                 pagesCount: Math.ceil(countAll / +pageSize),
@@ -47,7 +47,7 @@ exports.commentsQueryRepository = {
     findCommentById(commentId) {
         return __awaiter(this, void 0, void 0, function* () {
             let _id = new mongodb_1.ObjectId(commentId);
-            let foundComment = yield db_1.commentsCollection.findOne({ _id: _id });
+            let foundComment = yield db_1.CommentModel.findOne({ _id: _id });
             if (!foundComment) {
                 return null;
             }

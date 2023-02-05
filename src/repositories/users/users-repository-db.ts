@@ -1,13 +1,14 @@
-import {userAccountsCollection} from "../db";
+import {UserModel} from "../db";
 import {userAccountDbModel, userViewModel} from "../../models/models";
 import {ObjectId} from "mongodb";
+import add from "date-fns/add";
 
 
 export const usersRepository = {
     //for superAdmin:
 
     async createUserByAdmin(newDbUser: userAccountDbModel): Promise<userViewModel> {
-        await userAccountsCollection.insertOne(newDbUser)
+        await UserModel.create(newDbUser)
         return {
             id: newDbUser._id.toString(),
             login: newDbUser.accountData.login,
@@ -19,7 +20,7 @@ export const usersRepository = {
 
     async deleteUserById(id:string): Promise<boolean> {
         let _id = new ObjectId(id)
-        let result = await userAccountsCollection.deleteOne({_id: _id})
+        let result = await UserModel.deleteOne({_id: _id})
         return result.deletedCount === 1
 
     },
@@ -27,38 +28,53 @@ export const usersRepository = {
     // req.user in bearerAuthMiddleware
 
     async findUserById(userId: Object): Promise<userAccountDbModel> {
-        let user = await userAccountsCollection.findOne({_id: userId})
+        let user = await UserModel.findOne({_id: userId}).lean()
         return user!
     },
 
     // for regular creation of user
 
     async createUser(newDbUser: userAccountDbModel): Promise<userAccountDbModel> {
-        await userAccountsCollection.insertOne(newDbUser)
+        await UserModel.create(newDbUser)
         return newDbUser
 
     },
 
     async findByLoginOrEmail(loginOrEmail: string): Promise<userAccountDbModel | null> {
-        return await userAccountsCollection.findOne( {$or: [{'accountData.email': loginOrEmail}, {'accountData.login': loginOrEmail}] } )
+        return await UserModel.findOne( {$or: [{'accountData.email': loginOrEmail}, {'accountData.login': loginOrEmail}] } ).lean()
     },
 
     //email resending
 
     async findUserByConfirmationCode(code: string): Promise<userAccountDbModel | null> {
-        return await userAccountsCollection.findOne({'emailConfirmation.confirmationCode': code})
+        return await UserModel.findOne({'emailConfirmation.confirmationCode': code}).lean()
 
     },
 
+    async findUserByRecoveryCode(code: string): Promise<userAccountDbModel | null> {
+        return await UserModel.findOne({'passwordRecovery.recoveryCode': code}).lean()
+    },
+
     async updateConfirmation (_id: Object): Promise<boolean> {
-        let result = await userAccountsCollection.updateOne({_id}, {$set: {'emailConfirmation.isConfirmed': true} })
+        let result = await UserModel.updateOne({_id}, {$set: {'emailConfirmation.isConfirmed': true} })
         return result.modifiedCount === 1
     },
 
     async updateCode (_id: Object, code: string): Promise<boolean> {
-        let result = await userAccountsCollection.updateOne({_id}, {$set: {'emailConfirmation.confirmationCode': code} })
+        let result = await UserModel.updateOne({_id}, {$set: {'emailConfirmation.confirmationCode': code} })
         return result.modifiedCount === 1
-    }
+    },
+
+    async updatePasswordCode (user: userAccountDbModel, code: string): Promise<boolean> {
+        const expirationDate = add(new Date(), {hours: 1})
+        let result = await UserModel.updateOne({_id: user._id}, {$set: {'passwordRecovery.recoveryCode': code,'passwordRecovery.expirationDate': expirationDate}})
+        return result.modifiedCount === 1
+    },
+
+    async updatePassword (user: userAccountDbModel, newPasswordHash: string): Promise<boolean> {
+        let result = await UserModel.updateOne({_id: user._id}, {$set: {'accountData.passwordHash': newPasswordHash}})
+        return result.modifiedCount === 1
+    },
 
 
 }

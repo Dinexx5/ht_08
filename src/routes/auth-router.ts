@@ -2,27 +2,28 @@ import {Request, Response, Router} from "express"
 import {RequestWithBody} from "../models/types";
 import {
     authInputModel,
-    createUserInputModel,
+    createUserInputModel, passwordRecoveryModel,
     registrationConfirmationInput,
     resendEmailModel,
 } from "../models/models";
 import {
-    confirmationCodeValidation,
-    emailValidation, emailValidationForResending,
+    confirmationCodeValidation, confirmationCodeValidationForPassword,
+    emailValidation, emailValidationForPasswordRecovery, emailValidationForResending,
     inputValidationMiddleware,
-    loginOrEmailValidation, loginValidation,
+    loginOrEmailValidation, loginValidation, newPasswordValidation,
     passwordAuthValidation, passwordValidation,
 } from "../middlewares/input-validation";
 import {jwtService} from "../application/jwt-service";
 import {bearerAuthMiddleware, checkRefreshTokenMiddleware} from "../middlewares/auth-middlewares";
 import {authService} from "../domain/auth-service";
 import {
-    loginRequestsLimiter,
+    loginRequestsLimiter, newPasswordRequestsLimiter, passwordRecoveryRequestsLimiter,
     registrationConfirmationLimiter,
     registrationRequestsLimiter,
     registrationResendingLimiter,
 } from "../middlewares/rate-limit-middleware";
 import {devicesService} from "../domain/devices-service";
+import {usersService} from "../domain/users-service";
 
 
 
@@ -101,6 +102,40 @@ authRouter.post('/login',
     res.json({'accessToken': accessToken})
 
 })
+
+authRouter.post('/password-recovery',
+    passwordRecoveryRequestsLimiter,
+    emailValidationForPasswordRecovery,
+    inputValidationMiddleware,
+    async(req: RequestWithBody<resendEmailModel>, res: Response) => {
+
+        const isEmailSent = await authService.sendEmailForPasswordRecovery(req.body.email)
+
+        if (!isEmailSent) {
+            res.status(204).send('error')
+            return
+        }
+        res.sendStatus(204)
+
+    })
+
+authRouter.post('/new-password',
+    newPasswordRequestsLimiter,
+    newPasswordValidation,
+    confirmationCodeValidationForPassword,
+    inputValidationMiddleware,
+    async(req: RequestWithBody<passwordRecoveryModel>, res: Response) => {
+
+       const isPasswordUpdated = usersService.updatePassword(req.body.newPassword, req.body.recoveryCode)
+
+        if (!isPasswordUpdated) {
+            res.send('something went wrong with the password change')
+            return
+        }
+        res.sendStatus(204)
+
+    })
+
 
 authRouter.post('/refresh-token',
     checkRefreshTokenMiddleware,

@@ -14,4 +14,8 @@ export const registrationConfirmationLimiter = rateLimit(limiterOptions)
 
 export const loginRequestsLimiter = rateLimit(limiterOptions)
 
+export const passwordRecoveryRequestsLimiter = rateLimit(limiterOptions)
+
+export const newPasswordRequestsLimiter = rateLimit(limiterOptions)
+
 

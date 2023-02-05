@@ -42,7 +42,7 @@ blogsRouter.get('/:id',
     async (req: RequestWithParams<paramsIdModel>, res: Response) => {
     const blog: blogViewModel | null = await blogsQueryRepository.findBlogById(req.params.id)
     if (!blog) {
-        return res.send(404)
+        return res.sendStatus(404)
     }
     res.send(blog)
 })
@@ -53,7 +53,7 @@ blogsRouter.get('/:id/posts',
 
     const blog: blogViewModel | null = await blogsQueryRepository.findBlogById(req.params.id)
     if (!blog) {
-        return res.send(404)
+        return res.sendStatus(404)
     }
     const foundPosts: paginatedViewModel<postViewModel[]> = await postsQueryRepository.findPostsForBlog(req.params.id, req.query)
     res.send(foundPosts)
@@ -72,7 +72,7 @@ blogsRouter.post('/:id/posts',
     const blogId = req.params.id
     const blog: blogViewModel | null = await blogsQueryRepository.findBlogById(blogId)
     if (!blog) {
-        return res.send(404)
+        return res.sendStatus(404)
     }
     const newPost: postViewModel = await postsService.createPostForSpecifiedBlog(req.body, blogId)
     res.status(201).send(newPost)
@@ -98,9 +98,9 @@ blogsRouter.delete('/:id',
     async (req: RequestWithParams<paramsIdModel>, res: Response) => {
     const isDeleted: boolean = await blogsService.deleteBlogById(req.params.id)
     if (!isDeleted) {
-       return res.send(404)
+       return res.sendStatus(404)
     }
-    res.send(204)
+    return res.sendStatus(204)
 })
 
 blogsRouter.put('/:id',
@@ -114,8 +114,8 @@ blogsRouter.put('/:id',
 
     let isUpdated: boolean = await blogsService.UpdateBlogById(req.params.id, req.body)
     if (!isUpdated) {
-        return res.send(404)
+        return res.sendStatus(404)
     }
-    res.send(204)
+    return res.sendStatus(204)
 
     })

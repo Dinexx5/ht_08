@@ -14,8 +14,9 @@ export const app = express()
 export const port = 3001
 
 app.use(cookieParser())
-app.use(bodyParser.urlencoded());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+
 app.set('trust proxy', true)
 
 app.use('/auth', authRouter)

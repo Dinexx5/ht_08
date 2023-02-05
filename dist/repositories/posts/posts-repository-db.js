@@ -27,7 +27,7 @@ exports.postsRepository = {
                 blogName: foundBlog.name,
                 createdAt: foundBlog.createdAt
             };
-            yield db_1.postsCollection.insertOne(newDbPost);
+            yield db_1.PostModel.create(newDbPost);
             return {
                 id: newDbPost._id.toString(),
                 title: title,
@@ -42,7 +42,7 @@ exports.postsRepository = {
     deletePostById(postId) {
         return __awaiter(this, void 0, void 0, function* () {
             let _id = new mongodb_1.ObjectId(postId);
-            let result = yield db_1.postsCollection.deleteOne({ _id: _id });
+            let result = yield db_1.PostModel.deleteOne({ _id: _id });
             return result.deletedCount === 1;
         });
     },
@@ -50,7 +50,7 @@ exports.postsRepository = {
         return __awaiter(this, void 0, void 0, function* () {
             const { title, shortDescription, content, blogId } = body;
             let _id = new mongodb_1.ObjectId(id);
-            let result = yield db_1.postsCollection.updateOne({ _id: _id }, { $set: { title: title, shortDescription: shortDescription, content: content, blogId: blogId } });
+            let result = yield db_1.PostModel.updateOne({ _id: _id }, { $set: { title: title, shortDescription: shortDescription, content: content, blogId: blogId } });
             return result.matchedCount === 1;
         });
     }

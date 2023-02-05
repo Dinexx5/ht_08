@@ -25,14 +25,14 @@ exports.blogsRouter.get('/', (req, res) => __awaiter(void 0, void 0, void 0, fun
 exports.blogsRouter.get('/:id', input_validation_1.objectIdIsValidMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const blog = yield blogs_query_repository_1.blogsQueryRepository.findBlogById(req.params.id);
     if (!blog) {
-        return res.send(404);
+        return res.sendStatus(404);
     }
     res.send(blog);
 }));
 exports.blogsRouter.get('/:id/posts', input_validation_1.objectIdIsValidMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const blog = yield blogs_query_repository_1.blogsQueryRepository.findBlogById(req.params.id);
     if (!blog) {
-        return res.send(404);
+        return res.sendStatus(404);
     }
     const foundPosts = yield posts_query_repository_1.postsQueryRepository.findPostsForBlog(req.params.id, req.query);
     res.send(foundPosts);
@@ -41,7 +41,7 @@ exports.blogsRouter.post('/:id/posts', auth_middlewares_1.basicAuthMiddleware, i
     const blogId = req.params.id;
     const blog = yield blogs_query_repository_1.blogsQueryRepository.findBlogById(blogId);
     if (!blog) {
-        return res.send(404);
+        return res.sendStatus(404);
     }
     const newPost = yield posts_service_1.postsService.createPostForSpecifiedBlog(req.body, blogId);
     res.status(201).send(newPost);
@@ -53,14 +53,14 @@ exports.blogsRouter.post('/', auth_middlewares_1.basicAuthMiddleware, input_vali
 exports.blogsRouter.delete('/:id', auth_middlewares_1.basicAuthMiddleware, input_validation_1.objectIdIsValidMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const isDeleted = yield blogs_service_1.blogsService.deleteBlogById(req.params.id);
     if (!isDeleted) {
-        return res.send(404);
+        return res.sendStatus(404);
     }
-    res.send(204);
+    return res.sendStatus(204);
 }));
 exports.blogsRouter.put('/:id', auth_middlewares_1.basicAuthMiddleware, input_validation_1.objectIdIsValidMiddleware, input_validation_1.nameValidation, input_validation_1.descriptionValidation, input_validation_1.websiteUrlValidation, input_validation_1.inputValidationMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let isUpdated = yield blogs_service_1.blogsService.UpdateBlogById(req.params.id, req.body);
     if (!isUpdated) {
-        return res.send(404);
+        return res.sendStatus(404);
     }
-    res.send(204);
+    return res.sendStatus(204);
 }));

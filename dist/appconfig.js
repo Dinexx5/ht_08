@@ -17,7 +17,7 @@ const device_router_1 = require("./routes/device-router");
 exports.app = (0, express_1.default)();
 exports.port = 3001;
 exports.app.use((0, cookie_parser_1.default)());
-exports.app.use(body_parser_1.default.urlencoded());
+exports.app.use(body_parser_1.default.urlencoded({ extended: true }));
 exports.app.use(body_parser_1.default.json());
 exports.app.set('trust proxy', true);
 exports.app.use('/auth', auth_router_1.authRouter);

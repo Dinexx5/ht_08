@@ -17,6 +17,7 @@ const auth_middlewares_1 = require("../middlewares/auth-middlewares");
 const auth_service_1 = require("../domain/auth-service");
 const rate_limit_middleware_1 = require("../middlewares/rate-limit-middleware");
 const devices_service_1 = require("../domain/devices-service");
+const users_service_1 = require("../domain/users-service");
 exports.authRouter = (0, express_1.Router)({});
 //emails
 exports.authRouter.post('/registration', rate_limit_middleware_1.registrationRequestsLimiter, input_validation_1.loginValidation, input_validation_1.emailValidation, input_validation_1.passwordValidation, input_validation_1.inputValidationMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -57,6 +58,22 @@ exports.authRouter.post('/login', rate_limit_middleware_1.loginRequestsLimiter, 
         secure: true
     });
     res.json({ 'accessToken': accessToken });
+}));
+exports.authRouter.post('/password-recovery', rate_limit_middleware_1.passwordRecoveryRequestsLimiter, input_validation_1.emailValidationForPasswordRecovery, input_validation_1.inputValidationMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const isEmailSent = yield auth_service_1.authService.sendEmailForPasswordRecovery(req.body.email);
+    if (!isEmailSent) {
+        res.status(204).send('error');
+        return;
+    }
+    res.sendStatus(204);
+}));
+exports.authRouter.post('/new-password', rate_limit_middleware_1.newPasswordRequestsLimiter, input_validation_1.newPasswordValidation, input_validation_1.confirmationCodeValidationForPassword, input_validation_1.inputValidationMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const isPasswordUpdated = users_service_1.usersService.updatePassword(req.body.newPassword, req.body.recoveryCode);
+    if (!isPasswordUpdated) {
+        res.send('something went wrong with the password change');
+        return;
+    }
+    res.sendStatus(204);
 }));
 exports.authRouter.post('/refresh-token', auth_middlewares_1.checkRefreshTokenMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const refreshToken = req.cookies.refreshToken;

@@ -1,4 +1,4 @@
-import {userAccountsCollection} from "../db";
+import {UserModel} from "../db";
 import {
     userViewModel,
     paginationQuerys,
@@ -14,9 +14,7 @@ function mapDbUserToUserViewModel (user: userAccountDbModel): userViewModel {
     }
 
 }
-
 export const usersQueryRepository = {
-
 
     async getAllUsers(query: paginationQuerys): Promise<paginatedViewModel<userViewModel[]>> {
 
@@ -24,73 +22,28 @@ export const usersQueryRepository = {
         const sortDirectionInt: 1 | -1 = sortDirection === "desc" ? -1 : 1;
         const skippedUsersCount = (+pageNumber-1)*+pageSize
 
-        if (searchLoginTerm && !searchEmailTerm){
-            const countAllWithSearchLoginTerm = await userAccountsCollection.countDocuments({'accountData.login': {$regex: searchLoginTerm, $options: 'i' } })
-            const usersDb: userAccountDbModel[] = await userAccountsCollection
-                .find( {'accountData.login': {$regex: searchLoginTerm, $options: 'i' } }  )
-                .sort( {[sortBy]: sortDirectionInt} )
-                .skip(skippedUsersCount)
-                .limit(+pageSize)
-                .toArray()
-
-            const usersView = usersDb.map(mapDbUserToUserViewModel)
-            return {
-                pagesCount: Math.ceil(countAllWithSearchLoginTerm/+pageSize),
-                page: +pageNumber,
-                pageSize: +pageSize,
-                totalCount: countAllWithSearchLoginTerm,
-                items: usersView
-            }
-
+        const filter = {} as {
+            'accountData.login'?: {$regex: string, $options: string},
+            'accountData.email'?: {$regex: string, $options: string},
+            $or?: [{'accountData.email': {$regex: string, $options: string } },{'accountData.login': {$regex: string, $options: string }}]
         }
-
-        if (searchEmailTerm && !searchLoginTerm){
-            const countAllWithSearchEmailTerm = await userAccountsCollection.countDocuments({'accountData.email': {$regex: searchEmailTerm, $options: 'i' } })
-            const usersDb: userAccountDbModel[] = await userAccountsCollection
-                .find( {'accountData.email': {$regex: searchEmailTerm, $options: 'i' } }  )
-                .sort( {[sortBy]: sortDirectionInt} )
-                .skip(skippedUsersCount)
-                .limit(+pageSize)
-                .toArray()
-
-            const usersView = usersDb.map(mapDbUserToUserViewModel)
-            return {
-                pagesCount: Math.ceil(countAllWithSearchEmailTerm/+pageSize),
-                page: +pageNumber,
-                pageSize: +pageSize,
-                totalCount: countAllWithSearchEmailTerm,
-                items: usersView
-            }
-
+        if (searchLoginTerm && !searchEmailTerm) {
+            filter['accountData.login'] = {$regex: searchLoginTerm, $options: 'i' }
         }
-
+        if (searchEmailTerm && !searchLoginTerm) {
+            filter['accountData.email'] = {$regex: searchEmailTerm, $options: 'i' }
+        }
         if (searchLoginTerm && searchEmailTerm){
-            const countAllWithBothTerms = await userAccountsCollection.countDocuments( {$or: [{'accountData.email': {$regex: searchEmailTerm, $options: 'i' } }, {'accountData.login': {$regex: searchLoginTerm, $options: 'i' }} ] })
-            const usersDb: userAccountDbModel[] = await userAccountsCollection
-                .find(  {$or: [{'accountData.email': {$regex: searchEmailTerm, $options: 'i' } }, {'accountData.login': {$regex: searchLoginTerm, $options: 'i' }} ] } )
-                .sort( {[sortBy]: sortDirectionInt} )
-                .skip(skippedUsersCount)
-                .limit(+pageSize)
-                .toArray()
-
-            const usersView = usersDb.map(mapDbUserToUserViewModel)
-            return {
-                pagesCount: Math.ceil(countAllWithBothTerms/+pageSize),
-                page: +pageNumber,
-                pageSize: +pageSize,
-                totalCount: countAllWithBothTerms,
-                items: usersView
-            }
-
+            filter.$or =  [{'accountData.email': {$regex: searchEmailTerm, $options: 'i' } }, {'accountData.login': {$regex: searchLoginTerm, $options: 'i' }} ]
         }
 
-        const countAll = await userAccountsCollection.countDocuments()
-        const usersDb = await userAccountsCollection
-            .find( { } )
+        const countAll = await UserModel.countDocuments(filter)
+        const usersDb = await UserModel
+            .find( filter )
             .sort( {[sortBy]: sortDirectionInt} )
             .skip(skippedUsersCount)
             .limit(+pageSize)
-            .toArray()
+            .lean()
 
         const usersView = usersDb.map(mapDbUserToUserViewModel)
         return {
@@ -99,7 +52,6 @@ export const usersQueryRepository = {
             pageSize: +pageSize,
             totalCount: countAll,
             items: usersView
-
          }
     }
 

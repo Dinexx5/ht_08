@@ -27,30 +27,17 @@ exports.blogsQueryRepository = {
             const { sortDirection = "desc", sortBy = "createdAt", pageNumber = 1, pageSize = 10, searchNameTerm = null } = query;
             const sortDirectionInt = sortDirection === "desc" ? -1 : 1;
             const skippedBlogsCount = (+pageNumber - 1) * +pageSize;
+            const filter = {};
             if (searchNameTerm) {
-                const countAllWithSearchTerm = yield db_1.blogsCollection.countDocuments({ name: { $regex: searchNameTerm, $options: 'i' } });
-                const blogsDb = yield db_1.blogsCollection
-                    .find({ name: { $regex: searchNameTerm, $options: 'i' } })
-                    .sort({ [sortBy]: sortDirectionInt })
-                    .skip(skippedBlogsCount)
-                    .limit(+pageSize)
-                    .toArray();
-                const blogsView = blogsDb.map(mapFoundBlogToBlogViewModel);
-                return {
-                    pagesCount: Math.ceil(countAllWithSearchTerm / +pageSize),
-                    page: +pageNumber,
-                    pageSize: +pageSize,
-                    totalCount: countAllWithSearchTerm,
-                    items: blogsView
-                };
+                filter.name = { $regex: searchNameTerm, $options: 'i' };
             }
-            const countAll = yield db_1.blogsCollection.countDocuments();
-            let blogsDb = yield db_1.blogsCollection
-                .find({})
+            const countAll = yield db_1.BlogModelClass.countDocuments(filter);
+            let blogsDb = yield db_1.BlogModelClass
+                .find(filter)
                 .sort({ [sortBy]: sortDirectionInt })
                 .skip(skippedBlogsCount)
                 .limit(+pageSize)
-                .toArray();
+                .lean();
             const blogsView = blogsDb.map(mapFoundBlogToBlogViewModel);
             return {
                 pagesCount: Math.ceil(countAll / +pageSize),
@@ -64,7 +51,7 @@ exports.blogsQueryRepository = {
     findBlogById(blogId) {
         return __awaiter(this, void 0, void 0, function* () {
             let _id = new mongodb_1.ObjectId(blogId);
-            let foundBlog = yield db_1.blogsCollection.findOne({ _id: _id });
+            let foundBlog = yield db_1.BlogModelClass.findOne({ _id: _id }).lean();
             if (!foundBlog) {
                 return null;
             }
